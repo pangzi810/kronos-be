@@ -1,0 +1,405 @@
+package com.devhour.domain.service;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import com.devhour.domain.model.entity.JiraSyncHistory;
+import com.devhour.domain.model.entity.Project;
+import com.devhour.domain.model.valueobject.DetailStatus;
+import com.devhour.domain.model.valueobject.JiraSyncAction;
+import com.devhour.domain.model.valueobject.JiraSyncType;
+import com.devhour.domain.repository.ProjectRepository;
+
+/**
+ * JiraSyncDomainServiceのテストクラス
+ * 
+ * JIRA同期処理において、issue_key-based conflict resolution logic、
+ * master data priority policy (JIRA wins)、synchronizability check methods
+ * をテストする
+ */
+@ExtendWith(MockitoExtension.class)
+class JiraSyncDomainServiceTest {
+
+    @Mock
+    private ProjectRepository projectRepository;
+
+    @Mock
+    private DataMappingDomainService dataMappingDomainService;
+
+    private JiraSyncDomainService jiraSyncDomainService;
+
+    @BeforeEach
+    void setUp() {
+        jiraSyncDomainService = new JiraSyncDomainService(projectRepository, dataMappingDomainService);
+    }
+
+    // ========== resolveProjectConflict のテスト (REQ-7.1, REQ-7.2) ==========
+
+    @Test
+    void resolveProjectConflict_JIRAプロジェクトが存在_JIRAデータが優先される() {
+        // Given
+        String issueKey = "PROJ-123";
+        String commonFormatJson = createValidCommonFormatJson(issueKey);
+        JiraSyncHistory syncHistory = JiraSyncHistory.startSync(JiraSyncType.SCHEDULED, "system");
+        
+        // 既存のローカルプロジェクト
+        Project existingProject = Project.create("Local Project", "Local desc", 
+            LocalDate.of(2024, 1, 1), LocalDate.of(2024, 6, 1), "creator", issueKey, null);
+        
+        // JIRAからの更新されたプロジェクト情報
+        Project jiraProject = Project.create("JIRA Project", "JIRA desc", 
+            LocalDate.of(2024, 2, 1), LocalDate.of(2024, 7, 1), "creator", issueKey, null);
+        
+        when(projectRepository.findByJiraIssueKey(issueKey)).thenReturn(Optional.of(existingProject));
+        when(dataMappingDomainService.extractIssueKey(commonFormatJson)).thenReturn(issueKey);
+        when(dataMappingDomainService.updateProjectFromCommonFormat(existingProject, commonFormatJson))
+            .thenReturn(jiraProject);
+
+        // When
+        JiraSyncDomainService.ConflictResolutionResult result = 
+            jiraSyncDomainService.resolveProjectConflict(commonFormatJson, syncHistory);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(JiraSyncDomainService.ConflictResolutionResult.Action.UPDATE_FROM_JIRA, result.getAction());
+        assertEquals(jiraProject, result.getUpdatedProject());
+        assertNotNull(result.getSyncDetail());
+        assertEquals(JiraSyncAction.UPDATE_FROM_JIRA, result.getSyncDetail().getAction());
+        assertEquals(DetailStatus.SUCCESS, result.getSyncDetail().getStatus());
+        assertEquals(issueKey, result.getSyncDetail().getJiraIssueKey());
+        
+        // データ変更をログに記録することを確認
+        assertTrue(result.hasConflicts());
+        assertFalse(result.getConflictDetails().isEmpty());
+    }
+
+    @Test
+    void resolveProjectConflict_ローカル専用プロジェクトが存在しない_新規作成される() {
+        // Given
+        String issueKey = "PROJ-456";
+        String commonFormatJson = createValidCommonFormatJson(issueKey);
+        JiraSyncHistory syncHistory = JiraSyncHistory.startSync(JiraSyncType.SCHEDULED, "system");
+        
+        Project newProject = Project.create("New JIRA Project", "New desc", 
+            LocalDate.of(2024, 1, 1), LocalDate.of(2024, 6, 1), "jira-sync", issueKey, null);
+        
+        when(projectRepository.findByJiraIssueKey(issueKey)).thenReturn(Optional.empty());
+        when(dataMappingDomainService.extractIssueKey(commonFormatJson)).thenReturn(issueKey);
+        when(dataMappingDomainService.createProjectFromCommonFormat(commonFormatJson, "jira-sync"))
+            .thenReturn(newProject);
+
+        // When
+        JiraSyncDomainService.ConflictResolutionResult result = 
+            jiraSyncDomainService.resolveProjectConflict(commonFormatJson, syncHistory);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(JiraSyncDomainService.ConflictResolutionResult.Action.CREATE_FROM_JIRA, result.getAction());
+        assertEquals(newProject, result.getUpdatedProject());
+        assertNotNull(result.getSyncDetail());
+        assertEquals(JiraSyncAction.CREATE_FROM_JIRA, result.getSyncDetail().getAction());
+        assertEquals(DetailStatus.SUCCESS, result.getSyncDetail().getStatus());
+        assertEquals(issueKey, result.getSyncDetail().getJiraIssueKey());
+        
+        // 新規作成の場合はコンフリクトなし
+        assertFalse(result.hasConflicts());
+        assertTrue(result.getConflictDetails().isEmpty());
+    }
+
+    @Test
+    void resolveProjectConflict_データマッピングエラー_エラー詳細が記録される() {
+        // Given
+        String issueKey = "PROJ-789";
+        String invalidJson = "invalid json";
+        JiraSyncHistory syncHistory = JiraSyncHistory.startSync(JiraSyncType.SCHEDULED, "system");
+        
+        when(dataMappingDomainService.extractIssueKey(invalidJson))
+            .thenThrow(new DataMappingDomainService.DataMappingException("Invalid JSON"));
+
+        // When
+        JiraSyncDomainService.ConflictResolutionResult result = 
+            jiraSyncDomainService.resolveProjectConflict(invalidJson, syncHistory);
+
+        // Then
+        assertNotNull(result);
+        assertEquals(JiraSyncDomainService.ConflictResolutionResult.Action.ERROR, result.getAction());
+        assertNull(result.getUpdatedProject());
+        assertNotNull(result.getSyncDetail());
+        assertEquals(JiraSyncAction.SYNC_ERROR, result.getSyncDetail().getAction());
+        assertEquals(DetailStatus.ERROR, result.getSyncDetail().getStatus());
+        assertNotNull(result.getSyncDetail().getErrorMessage());
+        assertTrue(result.getSyncDetail().getErrorMessage().contains("Invalid JSON"));
+    }
+
+    @Test
+    void resolveProjectConflict_nullパラメータ_IllegalArgumentExceptionが発生() {
+        // Given
+        JiraSyncHistory syncHistory = JiraSyncHistory.startSync(JiraSyncType.SCHEDULED, "system");
+
+        // When & Then
+        assertThrows(IllegalArgumentException.class, 
+            () -> jiraSyncDomainService.resolveProjectConflict(null, syncHistory));
+        
+        assertThrows(IllegalArgumentException.class, 
+            () -> jiraSyncDomainService.resolveProjectConflict("valid json", null));
+    }
+
+    // ========== checkProjectSynchronizability のテスト (REQ-7.3) ==========
+
+    @Test
+    void checkProjectSynchronizability_JQL条件に合致するプロジェクト_同期可能() {
+        // Given
+        String jqlQuery = "project = TESTPROJ AND status != Closed";
+        List<String> jiraIssueKeys = Arrays.asList("TESTPROJ-1", "TESTPROJ-2", "TESTPROJ-3");
+        
+        Project project = Project.create("Test Project", "Test desc", 
+            LocalDate.of(2024, 1, 1), LocalDate.of(2024, 6, 1), "creator", "TESTPROJ-1", null);
+
+        // When
+        boolean result = jiraSyncDomainService.checkProjectSynchronizability(project, jiraIssueKeys);
+
+        // Then
+        assertTrue(result);
+    }
+
+    @Test
+    void checkProjectSynchronizability_JQL条件に合致しないプロジェクト_同期不可() {
+        // Given
+        List<String> jiraIssueKeys = Arrays.asList("OTHER-1", "OTHER-2", "OTHER-3");
+        
+        Project project = Project.create("Test Project", "Test desc", 
+            LocalDate.of(2024, 1, 1), LocalDate.of(2024, 6, 1), "creator", "TESTPROJ-1", null);
+
+        // When
+        boolean result = jiraSyncDomainService.checkProjectSynchronizability(project, jiraIssueKeys);
+
+        // Then
+        assertFalse(result);
+    }
+
+    @Test
+    void checkProjectSynchronizability_JIRA統合されていないプロジェクト_同期不可() {
+        // Given
+        List<String> jiraIssueKeys = Arrays.asList("TESTPROJ-1", "TESTPROJ-2");
+        
+        // JIRA統合されていないプロジェクト
+        Project project = Project.create("Test Project", "Test desc", 
+            LocalDate.of(2024, 1, 1), LocalDate.of(2024, 6, 1), "creator");
+
+        // When
+        boolean result = jiraSyncDomainService.checkProjectSynchronizability(project, jiraIssueKeys);
+
+        // Then
+        assertFalse(result);
+    }
+
+    @Test
+    void checkProjectSynchronizability_nullパラメータ_IllegalArgumentExceptionが発生() {
+        // Given
+        Project project = Project.create("Test", "Test", 
+            LocalDate.of(2024, 1, 1), LocalDate.of(2024, 6, 1), "creator", "PROJ-1");
+        List<String> issueKeys = Arrays.asList("PROJ-1");
+
+        // When & Then
+        assertThrows(IllegalArgumentException.class, 
+            () -> jiraSyncDomainService.checkProjectSynchronizability(null, issueKeys));
+        
+        assertThrows(IllegalArgumentException.class, 
+            () -> jiraSyncDomainService.checkProjectSynchronizability(project, null));
+    }
+
+    // ========== markProjectAsJiraSyncExcluded のテスト (REQ-7.3) ==========
+
+    @Test
+    void markProjectAsJiraSyncExcluded_JQL条件に合致しないプロジェクト_除外マークされる() {
+        // Given
+        Project project = Project.create("Test Project", "Test desc", 
+            LocalDate.of(2024, 1, 1), LocalDate.of(2024, 6, 1), "creator", "PROJ-1");
+        JiraSyncHistory syncHistory = JiraSyncHistory.startSync(JiraSyncType.SCHEDULED, "system");
+
+        // When
+        JiraSyncDomainService.SyncExclusionResult result = 
+            jiraSyncDomainService.markProjectAsJiraSyncExcluded(project, syncHistory, "JQL条件に合致しません");
+
+        // Then
+        assertNotNull(result);
+        assertEquals(project, result.getExcludedProject());
+        assertNotNull(result.getSyncDetail());
+        assertEquals(JiraSyncAction.MARK_EXCLUDED, result.getSyncDetail().getAction());
+        assertEquals(DetailStatus.ERROR, result.getSyncDetail().getStatus()); // ERROR status is used to store exclusion reason
+        assertEquals("PROJ-1", result.getSyncDetail().getJiraIssueKey());
+        assertNull(result.getSyncDetail().getProjectId()); // No project ID for error details
+        assertTrue(result.getSyncDetail().getErrorMessage().contains("JQL条件に合致しません"));
+    }
+
+    @Test
+    void markProjectAsJiraSyncExcluded_nullパラメータ_IllegalArgumentExceptionが発生() {
+        // Given
+        Project project = Project.create("Test", "Test", 
+            LocalDate.of(2024, 1, 1), LocalDate.of(2024, 6, 1), "creator", "PROJ-1");
+        JiraSyncHistory syncHistory = JiraSyncHistory.startSync(JiraSyncType.SCHEDULED, "system");
+
+        // When & Then
+        assertThrows(IllegalArgumentException.class, 
+            () -> jiraSyncDomainService.markProjectAsJiraSyncExcluded(null, syncHistory, "reason"));
+        
+        assertThrows(IllegalArgumentException.class, 
+            () -> jiraSyncDomainService.markProjectAsJiraSyncExcluded(project, null, "reason"));
+    }
+
+    // ========== detectFieldConflicts のテスト (REQ-7.2, REQ-7.4) ==========
+
+    @Test
+    void detectFieldConflicts_重要フィールドの変更_コンフリクト詳細が記録される() {
+        // Given
+        Project originalProject = Project.create("Original Name", "Original desc", 
+            LocalDate.of(2024, 1, 1), LocalDate.of(2024, 6, 1), "creator", "PROJ-1");
+        
+        Project updatedProject = Project.create("Updated Name", "Updated desc", 
+            LocalDate.of(2024, 2, 1), LocalDate.of(2024, 7, 1), "creator", "PROJ-1");
+        updatedProject.start(); // ステータスを変更
+
+        // When
+        List<JiraSyncDomainService.ConflictDetail> conflicts = 
+            jiraSyncDomainService.detectFieldConflicts(originalProject, updatedProject);
+
+        // Then
+        assertNotNull(conflicts);
+        assertFalse(conflicts.isEmpty());
+        
+        // 名前の変更が検出される
+        assertTrue(conflicts.stream().anyMatch(c -> 
+            "projectName".equals(c.getFieldName()) && 
+            "Original Name".equals(c.getLocalValue()) && 
+            "Updated Name".equals(c.getJiraValue())));
+        
+        // 説明の変更が検出される
+        assertTrue(conflicts.stream().anyMatch(c -> 
+            "description".equals(c.getFieldName()) && 
+            "Original desc".equals(c.getLocalValue()) && 
+            "Updated desc".equals(c.getJiraValue())));
+        
+        // ステータスの変更が検出される
+        assertTrue(conflicts.stream().anyMatch(c -> 
+            "status".equals(c.getFieldName()) && 
+            "PLANNING".equals(c.getLocalValue()) && 
+            "IN_PROGRESS".equals(c.getJiraValue())));
+        
+        // 開始日の変更が検出される
+        assertTrue(conflicts.stream().anyMatch(c -> 
+            "startDate".equals(c.getFieldName()) && 
+            "2024-01-01".equals(c.getLocalValue()) && 
+            "2024-02-01".equals(c.getJiraValue())));
+    }
+
+    @Test
+    void detectFieldConflicts_変更なし_空のリストが返される() {
+        // Given
+        Project originalProject = Project.create("Same Name", "Same desc", 
+            LocalDate.of(2024, 1, 1), LocalDate.of(2024, 6, 1), "creator", "PROJ-1");
+        
+        Project sameProject = Project.create("Same Name", "Same desc", 
+            LocalDate.of(2024, 1, 1), LocalDate.of(2024, 6, 1), "creator", "PROJ-1");
+
+        // When
+        List<JiraSyncDomainService.ConflictDetail> conflicts = 
+            jiraSyncDomainService.detectFieldConflicts(originalProject, sameProject);
+
+        // Then
+        assertNotNull(conflicts);
+        assertTrue(conflicts.isEmpty());
+    }
+
+    @Test
+    void detectFieldConflicts_nullパラメータ_IllegalArgumentExceptionが発生() {
+        // Given
+        Project project = Project.create("Test", "Test", 
+            LocalDate.of(2024, 1, 1), LocalDate.of(2024, 6, 1), "creator", "PROJ-1");
+
+        // When & Then
+        assertThrows(IllegalArgumentException.class, 
+            () -> jiraSyncDomainService.detectFieldConflicts(null, project));
+        
+        assertThrows(IllegalArgumentException.class, 
+            () -> jiraSyncDomainService.detectFieldConflicts(project, null));
+    }
+
+    // ========== requiresAdminNotification のテスト (REQ-7.4) ==========
+
+    @Test
+    void requiresAdminNotification_重要フィールドの変更_通知が必要() {
+        // Given
+        List<JiraSyncDomainService.ConflictDetail> importantConflicts = Arrays.asList(
+            new JiraSyncDomainService.ConflictDetail("status", "PLANNING", "IN_PROGRESS", LocalDateTime.now()),
+            new JiraSyncDomainService.ConflictDetail("startDate", "2024-01-01", "2024-02-01", LocalDateTime.now())
+        );
+
+        // When
+        boolean result = jiraSyncDomainService.requiresAdminNotification(importantConflicts);
+
+        // Then
+        assertTrue(result);
+    }
+
+    @Test
+    void requiresAdminNotification_通常フィールドのみの変更_通知不要() {
+        // Given
+        List<JiraSyncDomainService.ConflictDetail> normalConflicts = Arrays.asList(
+            new JiraSyncDomainService.ConflictDetail("description", "Old desc", "New desc", LocalDateTime.now())
+        );
+
+        // When
+        boolean result = jiraSyncDomainService.requiresAdminNotification(normalConflicts);
+
+        // Then
+        assertFalse(result);
+    }
+
+    @Test
+    void requiresAdminNotification_空のコンフリクト_通知不要() {
+        // Given
+        List<JiraSyncDomainService.ConflictDetail> emptyConflicts = Arrays.asList();
+
+        // When
+        boolean result = jiraSyncDomainService.requiresAdminNotification(emptyConflicts);
+
+        // Then
+        assertFalse(result);
+    }
+
+    @Test
+    void requiresAdminNotification_nullパラメータ_IllegalArgumentExceptionが発生() {
+        // When & Then
+        assertThrows(IllegalArgumentException.class, 
+            () -> jiraSyncDomainService.requiresAdminNotification(null));
+    }
+
+    // ========== ヘルパーメソッド ==========
+
+    private String createValidCommonFormatJson(String issueKey) {
+        return String.format("""
+            {
+              "issueKey": "%s",
+              "projectName": "Test Project",
+              "description": "Test description",
+              "status": "ACTIVE",
+              "startDate": "2024-01-15",
+              "endDate": "2024-06-15"
+            }
+            """, issueKey);
+    }
+}

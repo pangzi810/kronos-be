@@ -1,0 +1,7 @@
+.env
+.gitattributes
+.gradle/
+bin/
+build/
+gradle/
+logs/
