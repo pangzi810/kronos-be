@@ -91,13 +91,16 @@ class WorkRecordControllerTest {
             dto.getDescription(),
             userId
         );
-        
+
+        WorkRecordsResponse response = WorkRecordsResponse.builder()
+            .workRecords(List.of(expectedWorkRecord))
+            .build();
         when(workRecordApplicationService.saveWorkRecords(
             userId,
             workDate,
             request
-        )).thenReturn(List.of(expectedWorkRecord));
-        
+        )).thenReturn(response);
+
         // Act & Assert
         mockMvc.perform(put("/api/work-records/me/" + workDate)
                 .with(csrf())
@@ -105,9 +108,9 @@ class WorkRecordControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").exists())
-                .andExpect(jsonPath("$[0].userId").value(userId))
-                .andExpect(jsonPath("$[0].projectId").value("project123"));
+                .andExpect(jsonPath("$.workRecords[0].id").exists())
+                .andExpect(jsonPath("$.workRecords[0].userId").value(userId))
+                .andExpect(jsonPath("$.workRecords[0].projectId").value("project123"));
         
         verify(workRecordApplicationService).saveWorkRecords(
             userId,
@@ -178,13 +181,16 @@ class WorkRecordControllerTest {
             dto.getDescription(),
             userId
         );
-        
+
+        WorkRecordsResponse response = WorkRecordsResponse.builder()
+            .workRecords(List.of(expectedWorkRecord))
+            .build();
         when(workRecordApplicationService.saveWorkRecords(
             userId,
             workDate,
             request
-        )).thenReturn(List.of(expectedWorkRecord));
-        
+        )).thenReturn(response);
+
         // Act & Assert
         mockMvc.perform(put("/api/work-records/me/" + workDate)
                 .with(csrf())
@@ -192,8 +198,8 @@ class WorkRecordControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").exists())
-                .andExpect(jsonPath("$[0].userId").value(userId));
+                .andExpect(jsonPath("$.workRecords[0].id").exists())
+                .andExpect(jsonPath("$.workRecords[0].userId").value(userId));
         
         verify(workRecordApplicationService).saveWorkRecords(
             userId,
@@ -561,13 +567,16 @@ class WorkRecordControllerTest {
             dto.getDescription(),
             userId
         );
-        
+
+        WorkRecordsResponse response = WorkRecordsResponse.builder()
+            .workRecords(List.of(expectedWorkRecord))
+            .build();
         when(workRecordApplicationService.saveWorkRecords(
             userId,
             workDate,
             request
-        )).thenReturn(List.of(expectedWorkRecord));
-        
+        )).thenReturn(response);
+
         // Act & Assert
         mockMvc.perform(put("/api/work-records/me/" + workDate)
                 .with(csrf())
@@ -575,8 +584,8 @@ class WorkRecordControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].userId").value(userId))
-                .andExpect(jsonPath("$[0].projectId").value("project123"));
+                .andExpect(jsonPath("$.workRecords[0].userId").value(userId))
+                .andExpect(jsonPath("$.workRecords[0].projectId").value("project123"));
         
         verify(workRecordApplicationService).saveWorkRecords(
             userId,
@@ -613,13 +622,16 @@ class WorkRecordControllerTest {
             dto.getDescription(),
             userId
         );
-        
+
+        WorkRecordsResponse response = WorkRecordsResponse.builder()
+            .workRecords(List.of(expectedWorkRecord))
+            .build();
         when(workRecordApplicationService.saveWorkRecords(
             userId,
             workDate,
             request
-        )).thenReturn(List.of(expectedWorkRecord));
-        
+        )).thenReturn(response);
+
         // Act & Assert
         mockMvc.perform(put("/api/work-records/me/" + workDate)
                 .with(csrf())
@@ -627,7 +639,7 @@ class WorkRecordControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].userId").value(userId));
+                .andExpect(jsonPath("$.workRecords[0].userId").value(userId));
         
         verify(workRecordApplicationService).saveWorkRecords(
             userId,
