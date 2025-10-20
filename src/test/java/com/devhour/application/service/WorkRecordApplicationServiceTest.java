@@ -451,11 +451,12 @@ class WorkRecordApplicationServiceTest {
             .thenAnswer(invocation -> invocation.getArgument(0));
         
         // Act
-        List<WorkRecord> result = service.saveWorkRecords(testUser.getId(), workDate, request);
-        
+        WorkRecordsResponse result = service.saveWorkRecords(testUser.getId(), workDate, request);
+
         // Assert
         assertNotNull(result);
-        assertEquals(2, result.size());
+        assertNotNull(result.getWorkRecords());
+        assertEquals(2, result.getWorkRecords().size());
         verify(userRepository, times(2)).findById(testUser.getId());
         verify(projectRepository, times(2)).findById(testProject.getId());
         verify(workRecordRepository, times(2)).save(any(WorkRecord.class));
@@ -671,9 +672,18 @@ class WorkRecordApplicationServiceTest {
         WorkRecordApproval approval = new WorkRecordApproval(userId, date);
         approval.approve("supervisor1");
 
+        // プロジェクトを準備
+        Project project = Project.restore(
+            "project1", "テストプロジェクト", "説明",
+            date, date.plusDays(30), null,
+            ProjectStatus.IN_PROGRESS,
+            userId, date.atStartOfDay(), date.atStartOfDay()
+        );
+
         // Mockの設定
         when(workRecordRepository.findByUserIdAndDate(userId, date)).thenReturn(workRecords);
         when(workRecordApprovalRepository.findByUserIdAndDate(userId, date)).thenReturn(Optional.of(approval));
+        when(projectRepository.findById("project1")).thenReturn(Optional.of(project));
 
         // Act
         WorkRecordsResponse result = service.getWorkRecordsWithApprovalStatus(userId, date);
@@ -711,9 +721,18 @@ class WorkRecordApplicationServiceTest {
         // 未承認データを準備
         WorkRecordApproval approval = new WorkRecordApproval(userId, date);
 
+        // プロジェクトを準備
+        Project project = Project.restore(
+            "project1", "テストプロジェクト", "説明",
+            date, date.plusDays(30), null,
+            ProjectStatus.IN_PROGRESS,
+            userId, date.atStartOfDay(), date.atStartOfDay()
+        );
+
         // Mockの設定
         when(workRecordRepository.findByUserIdAndDate(userId, date)).thenReturn(workRecords);
         when(workRecordApprovalRepository.findByUserIdAndDate(userId, date)).thenReturn(Optional.of(approval));
+        when(projectRepository.findById("project1")).thenReturn(Optional.of(project));
 
         // Act
         WorkRecordsResponse result = service.getWorkRecordsWithApprovalStatus(userId, date);
@@ -748,9 +767,18 @@ class WorkRecordApplicationServiceTest {
         );
         List<WorkRecord> workRecords = Arrays.asList(workRecord);
 
+        // プロジェクトを準備
+        Project project = Project.restore(
+            "project1", "テストプロジェクト", "説明",
+            date, date.plusDays(30), null,
+            ProjectStatus.IN_PROGRESS,
+            userId, date.atStartOfDay(), date.atStartOfDay()
+        );
+
         // Mockの設定
         when(workRecordRepository.findByUserIdAndDate(userId, date)).thenReturn(workRecords);
         when(workRecordApprovalRepository.findByUserIdAndDate(userId, date)).thenReturn(Optional.empty());
+        when(projectRepository.findById("project1")).thenReturn(Optional.of(project));
 
         // Act
         WorkRecordsResponse result = service.getWorkRecordsWithApprovalStatus(userId, date);
@@ -1512,15 +1540,16 @@ class WorkRecordApplicationServiceTest {
             .thenAnswer(invocation -> invocation.getArgument(0));
         
         // Act
-        List<WorkRecord> result = service.saveWorkRecords(userId, workDate, request);
-        
+        WorkRecordsResponse result = service.saveWorkRecords(userId, workDate, request);
+
         // Assert
         assertNotNull(result);
-        assertEquals(2, result.size());
-        
+        assertNotNull(result.getWorkRecords());
+        assertEquals(2, result.getWorkRecords().size());
+
         // 各プロジェクトに工数記録ができていることを確認
-        assertTrue(result.stream().anyMatch(r -> "project_a".equals(r.getProjectId())));
-        assertTrue(result.stream().anyMatch(r -> "project_b".equals(r.getProjectId())));
+        assertTrue(result.getWorkRecords().stream().anyMatch(r -> "project_a".equals(r.getProjectId())));
+        assertTrue(result.getWorkRecords().stream().anyMatch(r -> "project_b".equals(r.getProjectId())));
         
         verify(userRepository, times(2)).findById(userId);
         verify(projectRepository).findById("project_a");
