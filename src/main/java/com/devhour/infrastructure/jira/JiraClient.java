@@ -61,17 +61,17 @@ public class JiraClient {
      * @return JIRA検索結果
      * @throws JiraClientException JIRA通信エラーの場合
      */
-    public JiraIssueSearchResponse searchIssues(String jqlQuery, Integer maxResults, String nextPageToken) {
-        log.info("JQLクエリ実行開始: query={}, maxResults={}, nextPageToken={}", 
-                jqlQuery, maxResults, nextPageToken);
+    public JiraIssueSearchResponse searchIssues(String jqlQuery, Integer maxResults, Integer startAt) {
+        log.info("JQLクエリ実行開始: query={}, maxResults={}, startAt={}", 
+                jqlQuery, maxResults, startAt);
         
         if (!jiraConfiguration.isConfigured()) {
             throw new JiraClientException("JIRA認証情報が設定されていません。JIRA統合機能を利用できません。");
         }
-        validateSearchParameters(jqlQuery, maxResults, nextPageToken);
+        validateSearchParameters(jqlQuery, maxResults, startAt);
         
         try {
-            String url = buildSearchUrl(jqlQuery, maxResults, nextPageToken);
+            String url = buildSearchUrl(jqlQuery, maxResults, startAt);
             HttpEntity<String> entity = new HttpEntity<>(createAuthHeaders());
             
             ResponseEntity<String> response = jiraRestTemplate.exchange(
@@ -194,7 +194,7 @@ public class JiraClient {
      * @param startAt 開始位置
      * @return 構築されたURL
      */
-    private String buildSearchUrl(String jqlQuery, Integer maxResults, String nextPageToken) {
+    private String buildSearchUrl(String jqlQuery, Integer maxResults, Integer startAt) {
         log.info("元のJQLクエリ: '{}'", jqlQuery);
         
         // UriComponentsBuilderを使用して適切なURLエンコーディングを行う（エンコードなし）
@@ -202,7 +202,7 @@ public class JiraClient {
             .fromUriString(jiraConfiguration.getFullApiUrl("/rest/api/3/search/jql"))
             .queryParam("jql", jqlQuery)
             .queryParam("maxResults", maxResults != null ? maxResults : 50)
-            .queryParam("nextPageToken", nextPageToken != null ? nextPageToken : "")
+            .queryParam("startAt", startAt != null ? startAt : 0)
             .queryParam("expand", "renderedFields,names,schema,operations,editmeta,changelog")
             .queryParam("fields", "*all,-comment,-attachment,-worklog")
             .build(false)  // エンコードを無効にする
@@ -239,7 +239,7 @@ public class JiraClient {
      * @param startAt 開始位置
      * @throws IllegalArgumentException パラメータが不正な場合
      */
-    private void validateSearchParameters(String jqlQuery, Integer maxResults, String nextPageToken) {
+    private void validateSearchParameters(String jqlQuery, Integer maxResults, Integer startAt) {
         if (jqlQuery == null || jqlQuery.trim().isEmpty()) {
             throw new IllegalArgumentException("JQL query is required");
         }
@@ -248,7 +248,6 @@ public class JiraClient {
             throw new IllegalArgumentException("Max results must be greater than 0");
         }
     }
-    
     
     /**
      * JIRA設定の検証

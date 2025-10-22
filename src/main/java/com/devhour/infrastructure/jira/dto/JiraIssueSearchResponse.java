@@ -13,11 +13,6 @@ import lombok.Data;
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class JiraIssueSearchResponse {
-    
-    /**
-     * 続きデータ有無
-     */
-    private Boolean isLast;
 
     /**
      * レスポンスの拡張情報フィールド
@@ -27,7 +22,7 @@ public class JiraIssueSearchResponse {
     /**
      * 検索結果の開始位置
      */
-    private String nextPageToken;
+    private Integer startAt;
 
     /**
      * 1回のリクエストでの最大取得件数

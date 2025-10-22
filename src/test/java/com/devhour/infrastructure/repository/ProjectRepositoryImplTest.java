@@ -1,21 +1,24 @@
 package com.devhour.infrastructure.repository;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import com.devhour.domain.model.entity.Project;
 import com.devhour.domain.model.valueobject.ProjectStatus;
 import com.devhour.infrastructure.mapper.ProjectMapper;
@@ -112,20 +115,20 @@ class ProjectRepositoryImplTest {
     }
 
     @Test
-    void testFindByStatus_Planning() {
-        ProjectStatus status = ProjectStatus.PLANNING;
+    void testFindByStatus_Draft() {
+        ProjectStatus status = ProjectStatus.DRAFT;
         List<Project> expectedProjects = Arrays.asList(
-            createTestProject("project1", "Planning Project 1"),
-            createTestProject("project2", "Planning Project 2")
+            createTestProject("project1", "Draft Project 1"),
+            createTestProject("project2", "Draft Project 2")
         );
         
-        when(projectMapper.findByStatus("PLANNING")).thenReturn(expectedProjects);
+        when(projectMapper.findByStatus("DRAFT")).thenReturn(expectedProjects);
         
         List<Project> result = repository.findByStatus(status);
         
         assertEquals(2, result.size());
         assertEquals(expectedProjects, result);
-        verify(projectMapper).findByStatus("PLANNING");
+        verify(projectMapper).findByStatus("DRAFT");
     }
 
     @Test
@@ -366,38 +369,38 @@ class ProjectRepositoryImplTest {
 
     @Test
     void testCountByStatus_Planning() {
-        ProjectStatus status = ProjectStatus.PLANNING;
+        ProjectStatus status = ProjectStatus.DRAFT;
         
-        when(projectMapper.countByStatus("PLANNING")).thenReturn(5L);
+        when(projectMapper.countByStatus("DRAFT")).thenReturn(5L);
         
         long result = repository.countByStatus(status);
         
         assertEquals(5L, result);
-        verify(projectMapper).countByStatus("PLANNING");
+        verify(projectMapper).countByStatus("DRAFT");
     }
 
     @Test
-    void testCountByStatus_Completed() {
-        ProjectStatus status = ProjectStatus.COMPLETED;
+    void testCountByStatus_Closed() {
+        ProjectStatus status = ProjectStatus.CLOSED;
         
-        when(projectMapper.countByStatus("COMPLETED")).thenReturn(10L);
+        when(projectMapper.countByStatus("CLOSED")).thenReturn(10L);
         
         long result = repository.countByStatus(status);
         
         assertEquals(10L, result);
-        verify(projectMapper).countByStatus("COMPLETED");
+        verify(projectMapper).countByStatus("CLOSED");
     }
 
     @Test
     void testCountByStatus_Zero() {
-        ProjectStatus status = ProjectStatus.CANCELLED;
+        ProjectStatus status = ProjectStatus.CLOSED;
         
-        when(projectMapper.countByStatus("CANCELLED")).thenReturn(0L);
+        when(projectMapper.countByStatus("CLOSED")).thenReturn(0L);
         
         long result = repository.countByStatus(status);
         
         assertEquals(0L, result);
-        verify(projectMapper).countByStatus("CANCELLED");
+        verify(projectMapper).countByStatus("CLOSED");
     }
 
     private Project createTestProject(String id, String name) {
@@ -408,7 +411,7 @@ class ProjectRepositoryImplTest {
             LocalDate.now(),
             LocalDate.now().plusMonths(6),
             null,
-            ProjectStatus.PLANNING,
+            ProjectStatus.DRAFT,
             "createdBy",
             LocalDateTime.now(),
             LocalDateTime.now()

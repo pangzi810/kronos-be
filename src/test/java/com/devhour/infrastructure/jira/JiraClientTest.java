@@ -137,7 +137,6 @@ class JiraClientTest {
         // then
         assertThat(result).isNotNull();
         assertThat(result.getMaxResults()).isEqualTo(50);
-        assertThat(result.getNextPageToken()).isEqualTo("");
         
         // URLパラメータの検証
         ArgumentCaptor<String> urlCaptor = ArgumentCaptor.forClass(String.class);

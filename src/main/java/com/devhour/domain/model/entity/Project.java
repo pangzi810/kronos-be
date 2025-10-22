@@ -60,7 +60,7 @@ public class Project {
         this.startDate = startDate;
         this.plannedEndDate = plannedEndDate;
         this.actualEndDate = null;
-        this.status = ProjectStatus.PLANNING;
+        this.status = ProjectStatus.DRAFT;
         this.createdBy = createdBy;
         this.createdAt = createdAt;
         this.updatedAt = createdAt;
@@ -80,7 +80,7 @@ public class Project {
         this.startDate = startDate;
         this.plannedEndDate = plannedEndDate;
         this.actualEndDate = null;
-        this.status = ProjectStatus.PLANNING;
+        this.status = ProjectStatus.DRAFT;
         this.createdBy = createdBy;
         this.createdAt = createdAt;
         this.updatedAt = createdAt;
@@ -256,10 +256,6 @@ public class Project {
      * @throws IllegalStateException 更新不可能な状態の場合
      */
     public void updateProjectInfo(String name, String description, LocalDate startDate, LocalDate plannedEndDate) {
-        if (status.isFinished()) {
-            throw new IllegalStateException("完了または中止されたプロジェクトは更新できません");
-        }
-        
         validateUpdateParameters(name, startDate, plannedEndDate);
         
         this.name = name.trim();
@@ -317,7 +313,7 @@ public class Project {
      * @throws IllegalStateException 完了できない状態の場合
      * @throws IllegalArgumentException 不正な終了日の場合
      */
-    public void complete(LocalDate actualEndDate) {
+    public void close(LocalDate actualEndDate) {
         if (!status.isInProgress()) {
             throw new IllegalStateException(
                 String.format("プロジェクトを完了できません。現在のステータス: %s", status.getDisplayName())
@@ -332,26 +328,8 @@ public class Project {
             throw new IllegalArgumentException("実際の終了日は開始日以降の日付を設定してください");
         }
         
-        this.status = status.transitionTo(ProjectStatus.COMPLETED);
+        this.status = status.transitionTo(ProjectStatus.CLOSED);
         this.actualEndDate = actualEndDate;
-        this.updatedAt = LocalDateTime.now();
-    }
-    
-    /**
-     * プロジェクトを中止
-     * 
-     * @param actualEndDate 中止日
-     * @throws IllegalStateException 中止できない状態の場合
-     */
-    public void cancel(LocalDate actualEndDate) {
-        if (status.isFinished()) {
-            throw new IllegalStateException(
-                String.format("プロジェクトを中止できません。現在のステータス: %s", status.getDisplayName())
-            );
-        }
-        
-        this.status = status.transitionTo(ProjectStatus.CANCELLED);
-        this.actualEndDate = actualEndDate != null ? actualEndDate : LocalDate.now();
         this.updatedAt = LocalDateTime.now();
     }
     
@@ -383,23 +361,6 @@ public class Project {
         // 終了日以前かチェック（実際の終了日が設定されている場合はそれを使用）
         LocalDate endDate = actualEndDate != null ? actualEndDate : plannedEndDate;
         return !date.isAfter(endDate);
-    }
-    
-    /**
-     * プロジェクトの遅延状況をチェック
-     * 
-     * @return 遅延している場合true
-     */
-    public boolean isDelayed() {
-        if (status.isCompleted()) {
-            return actualEndDate != null && actualEndDate.isAfter(plannedEndDate);
-        }
-        
-        if (status.isInProgress()) {
-            return LocalDate.now().isAfter(plannedEndDate);
-        }
-        
-        return false;
     }
     
     // ========== JIRA統合機能 ==========
@@ -463,10 +424,6 @@ public class Project {
                               LocalDate plannedEndDate, ProjectStatus status, String customFields) {
         if (!hasJiraIntegration()) {
             throw new IllegalStateException("JIRA統合されていないプロジェクトは、JIRAからの情報更新はできません");
-        }
-        
-        if (this.status.isFinished()) {
-            throw new IllegalStateException("完了または中止されたプロジェクトは、JIRAからの情報更新はできません");
         }
         
         validateUpdateParameters(name, startDate, plannedEndDate);

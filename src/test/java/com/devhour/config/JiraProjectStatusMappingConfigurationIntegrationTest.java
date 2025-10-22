@@ -54,7 +54,7 @@ class JiraProjectStatusMappingConfigurationIntegrationTest {
 
         // Assert
         assertNotNull(defaultStatus);
-        assertEquals(ProjectStatus.PLANNING, defaultStatus);
+        assertEquals(ProjectStatus.DRAFT, defaultStatus);
     }
 
     @Test

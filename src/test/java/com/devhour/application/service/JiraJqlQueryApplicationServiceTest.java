@@ -323,7 +323,7 @@ class JiraJqlQueryApplicationServiceTest {
         void validateJql_WithValidQuery_ShouldReturnValidationResult() throws Exception {
             // Given
             JiraIssueSearchResponse mockResponse = createMockSearchResponse(10);
-            when(jiraClient.searchIssues(eq(TEST_JQL_STRING), eq(1), eq(""))).thenReturn(mockResponse);
+            when(jiraClient.searchIssues(eq(TEST_JQL_STRING), eq(1), eq(0))).thenReturn(mockResponse);
             
             // When
             JiraJqlQueryApplicationService.JqlValidationResult result = 
@@ -334,7 +334,7 @@ class JiraJqlQueryApplicationServiceTest {
             assertEquals(10, result.getMatchingProjectCount());
             assertNull(result.getErrorMessage());
             
-            verify(jiraClient).searchIssues(TEST_JQL_STRING, 1, "");
+            verify(jiraClient).searchIssues(TEST_JQL_STRING, 1, 0);
         }
         
         @Test
@@ -343,7 +343,7 @@ class JiraJqlQueryApplicationServiceTest {
             // Given
             String invalidJql = "invalid jql syntax";
             JiraClientException clientException = new JiraClientException("JQL構文エラー");
-            when(jiraClient.searchIssues(eq(invalidJql), eq(1), eq(""))).thenThrow(clientException);
+            when(jiraClient.searchIssues(eq(invalidJql), eq(1), eq(0))).thenThrow(clientException);
             
             // When
             JiraJqlQueryApplicationService.JqlValidationResult result = 

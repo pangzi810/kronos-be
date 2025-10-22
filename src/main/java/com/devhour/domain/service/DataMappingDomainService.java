@@ -286,12 +286,12 @@ public class DataMappingDomainService {
             Project newProject = Project.create(name, description, actualStartDate, actualEndDate, createdBy, issueKey, customFields);
             
             // Set the status after creation if it's different from default
-            if (!ProjectStatus.PLANNING.equals(status)) {
+            if (!ProjectStatus.DRAFT.equals(status)) {
                 try {
                     newProject.updateFromJira(name, description, actualStartDate, actualEndDate, status, null);
                 } catch (IllegalStateException e) {
                     // If status transition is not allowed, keep the original status
-                    log.warn("Could not set status {} for new project {}, keeping PLANNING", status, issueKey);
+                    log.warn("Could not set status {} for new project {}, keeping DRAFT", status, issueKey);
                 }
             }
             return newProject;

@@ -241,7 +241,7 @@ class WorkRecordApplicationServiceTest {
         Project completedProject = Project.create("完了プロジェクト", "説明",
             LocalDate.now().minusDays(30), LocalDate.now().minusDays(1), "pmo_user");
         completedProject.start(); // まず開始状態にする
-        completedProject.complete(LocalDate.now().minusDays(1)); // 完了状態に変更
+        completedProject.close(LocalDate.now().minusDays(1)); // 完了状態に変更
 
         when(userRepository.findById(testUser.getId()))
             .thenReturn(Optional.of(testUser));

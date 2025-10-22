@@ -205,7 +205,7 @@ public class JiraJqlQueryApplicationService {
             JiraIssueSearchResponse response = jiraClient.searchIssues(
                 jqlString.trim(),
                 1,  // カウントのみ取得
-                ""   // 開始位置
+                0   // 開始位置
             );
             
             // 総件数を使用（maxResults=0の場合でも正確な件数を取得）

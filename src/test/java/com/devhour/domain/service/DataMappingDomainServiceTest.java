@@ -51,23 +51,23 @@ class DataMappingDomainServiceTest {
         defaultMappingMap.put("IN_PROGRESS", ProjectStatus.IN_PROGRESS);
         defaultMappingMap.put("STARTED", ProjectStatus.IN_PROGRESS);
         defaultMappingMap.put("ONGOING", ProjectStatus.IN_PROGRESS);
-        defaultMappingMap.put("COMPLETED", ProjectStatus.COMPLETED);
-        defaultMappingMap.put("DONE", ProjectStatus.COMPLETED);
-        defaultMappingMap.put("FINISHED", ProjectStatus.COMPLETED);
-        defaultMappingMap.put("RESOLVED", ProjectStatus.COMPLETED);
-        defaultMappingMap.put("CLOSED", ProjectStatus.COMPLETED);
-        defaultMappingMap.put("CANCELLED", ProjectStatus.CANCELLED);
-        defaultMappingMap.put("CANCELED", ProjectStatus.CANCELLED);
-        defaultMappingMap.put("ABANDONED", ProjectStatus.CANCELLED);
-        defaultMappingMap.put("REJECTED", ProjectStatus.CANCELLED);
-        defaultMappingMap.put("PLANNING", ProjectStatus.PLANNING);
-        defaultMappingMap.put("NEW", ProjectStatus.PLANNING);
-        defaultMappingMap.put("OPEN", ProjectStatus.PLANNING);
-        defaultMappingMap.put("TO_DO", ProjectStatus.PLANNING);
-        defaultMappingMap.put("BACKLOG", ProjectStatus.PLANNING);
+        defaultMappingMap.put("COMPLETED", ProjectStatus.CLOSED);
+        defaultMappingMap.put("DONE", ProjectStatus.CLOSED);
+        defaultMappingMap.put("FINISHED", ProjectStatus.CLOSED);
+        defaultMappingMap.put("RESOLVED", ProjectStatus.CLOSED);
+        defaultMappingMap.put("CLOSED", ProjectStatus.CLOSED);
+        defaultMappingMap.put("CANCELLED", ProjectStatus.CLOSED);
+        defaultMappingMap.put("CANCELED", ProjectStatus.CLOSED);
+        defaultMappingMap.put("ABANDONED", ProjectStatus.CLOSED);
+        defaultMappingMap.put("REJECTED", ProjectStatus.CLOSED);
+        defaultMappingMap.put("PLANNING", ProjectStatus.DRAFT);
+        defaultMappingMap.put("NEW", ProjectStatus.DRAFT);
+        defaultMappingMap.put("OPEN", ProjectStatus.DRAFT);
+        defaultMappingMap.put("TO_DO", ProjectStatus.DRAFT);
+        defaultMappingMap.put("BACKLOG", ProjectStatus.DRAFT);
 
         lenient().when(statusMappingConfig.buildStatusMappingMap()).thenReturn(defaultMappingMap);
-        lenient().when(statusMappingConfig.getDefaultStatus()).thenReturn(ProjectStatus.PLANNING);
+        lenient().when(statusMappingConfig.getDefaultStatus()).thenReturn(ProjectStatus.DRAFT);
         
         domainService = new DataMappingDomainService(objectMapper, statusMappingConfig);
     }
@@ -289,7 +289,7 @@ class DataMappingDomainServiceTest {
         assertNull(result.getDescription());
         assertNotNull(result.getStartDate()); // Default dates are used
         assertNotNull(result.getPlannedEndDate()); // Default dates are used
-        assertEquals(ProjectStatus.PLANNING, result.getStatus());
+        assertEquals(ProjectStatus.DRAFT, result.getStatus());
         assertEquals("PROJ-456", result.getJiraIssueKey());
     }
 
@@ -431,7 +431,7 @@ class DataMappingDomainServiceTest {
             Project result = domainService.createProjectFromCommonFormat(jsonWithStatus, "creator");
 
             // Assert
-            assertEquals(ProjectStatus.COMPLETED, result.getStatus(),
+            assertEquals(ProjectStatus.CLOSED, result.getStatus(),
                 "Status '" + status + "' should map to COMPLETED");
         }
     }
@@ -455,7 +455,7 @@ class DataMappingDomainServiceTest {
             Project result = domainService.createProjectFromCommonFormat(jsonWithStatus, "creator");
 
             // Assert
-            assertEquals(ProjectStatus.CANCELLED, result.getStatus(),
+            assertEquals(ProjectStatus.CLOSED, result.getStatus(),
                 "Status '" + status + "' should map to CANCELLED");
         }
     }
@@ -479,7 +479,7 @@ class DataMappingDomainServiceTest {
             Project result = domainService.createProjectFromCommonFormat(jsonWithStatus, "creator");
 
             // Assert
-            assertEquals(ProjectStatus.PLANNING, result.getStatus(),
+            assertEquals(ProjectStatus.DRAFT, result.getStatus(),
                 "Status '" + status + "' should map to PLANNING");
         }
     }
@@ -500,7 +500,7 @@ class DataMappingDomainServiceTest {
         Project result = domainService.createProjectFromCommonFormat(jsonWithStatus, "creator");
 
         // Assert
-        assertEquals(ProjectStatus.PLANNING, result.getStatus());
+        assertEquals(ProjectStatus.DRAFT, result.getStatus());
     }
 
     @Test
@@ -518,7 +518,7 @@ class DataMappingDomainServiceTest {
         Project result = domainService.createProjectFromCommonFormat("{}", "creator");
 
         // Assert
-        assertEquals(ProjectStatus.PLANNING, result.getStatus());
+        assertEquals(ProjectStatus.DRAFT, result.getStatus());
     }
 
     // ========== 日付パースのテスト ==========
