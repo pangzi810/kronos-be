@@ -1,30 +1,29 @@
 package com.devhour.config;
 
-import static org.junit.jupiter.api.Assertions.*;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Map;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
-
 import com.devhour.domain.model.valueobject.ProjectStatus;
 
 /**
- * ProjectStatusMappingConfigurationの統合テストクラス
- * 
+ * JiraProjectStatusMappingConfigurationの統合テストクラス
+ *
  * Spring Bootコンテキストでの設定ロードとプロパティバインディングをテストする
  */
 @SpringJUnitConfig
-@Import({ProjectStatusMappingConfiguration.class, com.devhour.config.TestSecurityConfiguration.class})
+@Import({JiraProjectStatusMappingConfiguration.class, com.devhour.config.TestSecurityConfiguration.class})
 @ActiveProfiles("test")
-class ProjectStatusMappingConfigurationIntegrationTest {
+class JiraProjectStatusMappingConfigurationIntegrationTest {
 
     @Autowired
-    private ProjectStatusMappingConfiguration config;
+    private JiraProjectStatusMappingConfiguration config;
 
     @Test
     void configurationLoadedCorrectly() {

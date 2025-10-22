@@ -7,7 +7,7 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Component;
-import com.devhour.config.ProjectStatusMappingConfiguration;
+import com.devhour.config.JiraProjectStatusMappingConfiguration;
 import com.devhour.domain.model.entity.Project;
 import com.devhour.domain.model.valueobject.ProjectStatus;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -34,11 +34,11 @@ import lombok.extern.slf4j.Slf4j;
 public class DataMappingDomainService {
     
     private final ObjectMapper objectMapper;
-    private final ProjectStatusMappingConfiguration statusMappingConfig;
+    private final JiraProjectStatusMappingConfiguration statusMappingConfig;
     private final Map<String, ProjectStatus> statusMappingMap;
     
     public DataMappingDomainService(ObjectMapper objectMapper, 
-                                  ProjectStatusMappingConfiguration statusMappingConfig) {
+                                  JiraProjectStatusMappingConfiguration statusMappingConfig) {
         this.objectMapper = objectMapper;
         this.statusMappingConfig = statusMappingConfig;
         this.statusMappingMap = statusMappingConfig.buildStatusMappingMap();

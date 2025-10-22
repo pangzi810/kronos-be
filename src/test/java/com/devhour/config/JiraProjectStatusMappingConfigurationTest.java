@@ -1,26 +1,27 @@
 package com.devhour.config;
 
-import static org.junit.jupiter.api.Assertions.*;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Map;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import com.devhour.domain.model.valueobject.ProjectStatus;
 
 /**
- * ProjectStatusMappingConfigurationのテストクラス
- * 
- * プロジェクトステータスマッピング設定の機能をテストする
+ * JiraProjectStatusMappingConfigurationのテストクラス
+ *
+ * JIRA統合におけるプロジェクトステータスマッピング設定の機能をテストする
  */
-class ProjectStatusMappingConfigurationTest {
+class JiraProjectStatusMappingConfigurationTest {
 
-    private ProjectStatusMappingConfiguration config;
+    private JiraProjectStatusMappingConfiguration config;
 
     @BeforeEach
     void setUp() {
-        config = new ProjectStatusMappingConfiguration();
+        config = new JiraProjectStatusMappingConfiguration();
     }
 
     @Test

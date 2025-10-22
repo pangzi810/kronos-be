@@ -1,23 +1,24 @@
 package com.devhour.domain.service;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import com.devhour.config.ProjectStatusMappingConfiguration;
+import com.devhour.config.JiraProjectStatusMappingConfiguration;
 import com.devhour.domain.model.entity.Project;
 import com.devhour.domain.model.valueobject.ProjectStatus;
 import com.devhour.domain.service.DataMappingDomainService.DataMappingException;
@@ -38,7 +39,7 @@ class DataMappingDomainServiceTest {
     private ObjectMapper objectMapper;
     
     @Mock
-    private ProjectStatusMappingConfiguration statusMappingConfig;
+    private JiraProjectStatusMappingConfiguration statusMappingConfig;
 
     private DataMappingDomainService domainService;
 

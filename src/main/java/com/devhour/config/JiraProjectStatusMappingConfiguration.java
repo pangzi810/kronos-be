@@ -2,12 +2,9 @@ package com.devhour.config;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
-
 import com.devhour.domain.model.valueobject.ProjectStatus;
-
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @ConfigurationProperties("project.status.mapping")
 @Slf4j
-public class ProjectStatusMappingConfiguration {
+public class JiraProjectStatusMappingConfiguration {
     
     /**
      * IN_PROGRESSにマッピングするJIRAステータス文字列のリスト
