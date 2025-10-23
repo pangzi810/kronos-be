@@ -7,23 +7,17 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.test.context.ActiveProfiles;
 import com.devhour.domain.model.entity.JiraResponseTemplate;
 
 /**
- * ResponseTemplateMapperの統合テスト
- * 
- * JIRA同期機能のレスポンステンプレートマッパーのデータアクセス操作をテスト
- * MyBatisを使用したアノテーションベースのマッピングの動作確認
+ * JiraResponseTemplateMapperの統合テスト
+ *
+ * Testcontainers MySQLコンテナを使用した統合テスト
+ * AbstractMapperTestを継承してクリーンなMySQL環境でテストを実行
  */
-@MybatisTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@ActiveProfiles("test")
-@DisplayName("ResponseTemplateMapper統合テスト")
-class JiraResponseTemplateMapperTest {
+@DisplayName("JiraResponseTemplateMapper統合テスト")
+class JiraResponseTemplateMapperTest extends AbstractMapperTest {
 
     @Autowired
     private JiraResponseTemplateMapper responseTemplateMapper;

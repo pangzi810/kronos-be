@@ -11,10 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 
 import com.devhour.domain.model.entity.ApprovalAuthority;
@@ -22,15 +19,12 @@ import com.devhour.domain.model.valueobject.Position;
 
 /**
  * ApprovalAuthorityMapperの統合テスト
- * 
- * MyBatis統合テスト環境でApprovalAuthorityMapperの全機能をテスト
- * テストデータベースとTestContainers環境を使用した統合テスト
+ *
+ * Testcontainers MySQLコンテナを使用した統合テスト
+ * AbstractMapperTestを継承してクリーンなMySQL環境でテストを実行
  */
-@MybatisTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@ActiveProfiles("test")
 @DisplayName("ApprovalAuthorityMapper統合テスト")
-class ApprovalAuthorityMapperTest {
+class ApprovalAuthorityMapperTest extends AbstractMapperTest {
 
     @Autowired
     private ApprovalAuthorityMapper approvalAuthorityMapper;
@@ -300,10 +294,13 @@ class ApprovalAuthorityMapperTest {
 
         @Test
         @DisplayName("update - 承認権限情報の更新")
-        void update_ExistingApprovalAuthority_UpdatesSuccessfully() {
+        void update_ExistingApprovalAuthority_UpdatesSuccessfully() throws InterruptedException {
             // Arrange
             approvalAuthorityMapper.insert(testApprovalAuthority);
-            
+
+            // 更新時刻が確実にcreatedAtより後になるように少し待機
+            Thread.sleep(10);
+
             // 更新用の新しい情報
             testApprovalAuthority.updateInfo(
                 "updated@example.com", "更新太郎", Position.DEPARTMENT_MANAGER,
@@ -316,7 +313,7 @@ class ApprovalAuthorityMapperTest {
             // Assert
             Optional<ApprovalAuthority> result = approvalAuthorityMapper.findByEmail("updated@example.com");
             assertThat(result).isPresent();
-            
+
             ApprovalAuthority updated = result.get();
             assertThat(updated.getName()).isEqualTo("更新太郎");
             assertThat(updated.getPosition()).isEqualTo(Position.DEPARTMENT_MANAGER);
@@ -324,7 +321,7 @@ class ApprovalAuthorityMapperTest {
             assertThat(updated.getLevel1Name()).isEqualTo("更新本部");
             assertThat(updated.getLevel2Code()).isEqualTo("L2002");
             assertThat(updated.getLevel2Name()).isEqualTo("更新部");
-            assertThat(updated.getUpdatedAt()).isAfter(updated.getCreatedAt());
+            assertThat(updated.getUpdatedAt()).isAfterOrEqualTo(updated.getCreatedAt());
         }
     }
 

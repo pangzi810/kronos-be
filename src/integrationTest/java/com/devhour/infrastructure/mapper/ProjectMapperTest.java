@@ -10,22 +10,19 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.test.context.ActiveProfiles;
 
 import com.devhour.domain.model.entity.Project;
 import com.devhour.domain.model.entity.User;
 
 /**
  * ProjectMapperの統合テスト
+ *
+ * TestcontainersでMySQLコンテナを起動してテストを実行する。
+ * AbstractMapperTestを継承することで、自動的にMySQLコンテナが起動される。
  */
-@MybatisTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@ActiveProfiles("test")
 @DisplayName("ProjectMapper統合テスト")
-class ProjectMapperTest {
+class ProjectMapperTest extends AbstractMapperTest {
 
     @Autowired
     private ProjectMapper projectMapper;
@@ -49,7 +46,7 @@ class ProjectMapperTest {
         String id = "test-project-id";
         String name = "Test Project";
         String description = "Test Description";
-        String status = "PLANNING";
+        String status = "DRAFT";
         LocalDate startDate = LocalDate.now();
         LocalDate plannedEndDate = LocalDate.now().plusDays(30);
         String createdBy = userId;
@@ -81,7 +78,7 @@ class ProjectMapperTest {
         String name = "FindById Project";
         LocalDateTime now = LocalDateTime.now();
 
-        projectMapper.insert(id, name, "Description", "PLANNING", LocalDate.now(),
+        projectMapper.insert(id, name, "Description", "DRAFT", LocalDate.now(),
                            LocalDate.now().plusDays(30), "user", now, now, null, null);
 
         // Act
@@ -113,7 +110,7 @@ class ProjectMapperTest {
         String name = "Unique Project Name";
         LocalDateTime now = LocalDateTime.now();
 
-        projectMapper.insert(id, name, "Description", "PLANNING", LocalDate.now(),
+        projectMapper.insert(id, name, "Description", "DRAFT", LocalDate.now(),
                            LocalDate.now().plusDays(30), "user", now, now, null, null);
 
         // Act
@@ -140,7 +137,7 @@ class ProjectMapperTest {
     void findAll_ReturnsAllProjects() {
         // Arrange
         LocalDateTime now = LocalDateTime.now();
-        projectMapper.insert("project1", "Project One", "Desc1", "PLANNING",
+        projectMapper.insert("project1", "Project One", "Desc1", "DRAFT",
                            LocalDate.now(), LocalDate.now().plusDays(30), "user", now, now, null, null);
         projectMapper.insert("project2", "Project Two", "Desc2", "IN_PROGRESS",
                            LocalDate.now(), LocalDate.now().plusDays(30), "user", now, now, null, null);
@@ -158,18 +155,18 @@ class ProjectMapperTest {
     void findByStatus_ReturnsProjectsWithStatus() {
         // Arrange
         LocalDateTime now = LocalDateTime.now();
-        projectMapper.insert("planning-project", "Planning Project", "Desc", "PLANNING", 
+        projectMapper.insert("planning-project", "Planning Project", "Desc", "DRAFT", 
                            LocalDate.now(), LocalDate.now().plusDays(30), "user", now, now, null, null);
         projectMapper.insert("progress-project", "In Progress Project", "Desc", "IN_PROGRESS", 
                            LocalDate.now(), LocalDate.now().plusDays(30), "user", now, now, null, null);
 
         // Act
-        List<Project> planningProjects = projectMapper.findByStatus("PLANNING");
+        List<Project> planningProjects = projectMapper.findByStatus("DRAFT");
         List<Project> progressProjects = projectMapper.findByStatus("IN_PROGRESS");
 
         // Assert
         assertThat(planningProjects).isNotEmpty();
-        assertThat(planningProjects).allMatch(project -> "PLANNING".equals(project.getStatus().value()));
+        assertThat(planningProjects).allMatch(project -> "DRAFT".equals(project.getStatus().value()));
         assertThat(planningProjects).extracting(Project::getName).contains("Planning Project");
 
         assertThat(progressProjects).isNotEmpty();
@@ -182,11 +179,11 @@ class ProjectMapperTest {
     void findActiveProjects_ReturnsActiveProjects() {
         // Arrange
         LocalDateTime now = LocalDateTime.now();
-        projectMapper.insert("active-planning", "Active Planning", "Desc", "PLANNING", 
+        projectMapper.insert("active-planning", "Active Planning", "Desc", "DRAFT", 
                            LocalDate.now(), LocalDate.now().plusDays(30), "user", now, now, null, null);
         projectMapper.insert("active-progress", "Active Progress", "Desc", "IN_PROGRESS", 
                            LocalDate.now(), LocalDate.now().plusDays(30), "user", now, now, null, null);
-        projectMapper.insert("completed-project", "Completed Project", "Desc", "COMPLETED", 
+        projectMapper.insert("completed-project", "Completed Project", "Desc", "CLOSED", 
                            LocalDate.now(), LocalDate.now().plusDays(30), "user", now, now, null, null);
 
         // Act
@@ -199,7 +196,7 @@ class ProjectMapperTest {
         assertThat(result).extracting(Project::getName)
                          .doesNotContain("Completed Project");
         assertThat(result).allMatch(project -> 
-            "PLANNING".equals(project.getStatus().value()) || 
+            "DRAFT".equals(project.getStatus().value()) || 
             "IN_PROGRESS".equals(project.getStatus().value()));
     }
 
@@ -210,9 +207,9 @@ class ProjectMapperTest {
         LocalDateTime now = LocalDateTime.now();
         projectMapper.insert("recordable-progress", "Recordable Progress", "Desc", "IN_PROGRESS", 
                            LocalDate.now(), LocalDate.now().plusDays(30), "user", now, now, null, null);
-        projectMapper.insert("planning-project", "Planning Project", "Desc", "PLANNING", 
+        projectMapper.insert("planning-project", "Planning Project", "Desc", "DRAFT", 
                            LocalDate.now(), LocalDate.now().plusDays(30), "user", now, now, null, null);
-        projectMapper.insert("completed-project", "Completed Project", "Desc", "COMPLETED", 
+        projectMapper.insert("completed-project", "Completed Project", "Desc", "CLOSED", 
                            LocalDate.now(), LocalDate.now().plusDays(30), "user", now, now, null, null);
 
         // Act
@@ -238,11 +235,11 @@ class ProjectMapperTest {
         LocalDate searchStart = LocalDate.of(2024, 1, 5);
         LocalDate searchEnd = LocalDate.of(2024, 1, 15);
         
-        projectMapper.insert("early-project", "Early Project", "Desc", "PLANNING",
+        projectMapper.insert("early-project", "Early Project", "Desc", "DRAFT",
                            baseDate, baseDate.plusDays(30), "user", now, now, null, null);
-        projectMapper.insert("in-range-project", "In Range Project", "Desc", "PLANNING",
+        projectMapper.insert("in-range-project", "In Range Project", "Desc", "DRAFT",
                            LocalDate.of(2024, 1, 10), baseDate.plusDays(30), "user", now, now, null, null);
-        projectMapper.insert("late-project", "Late Project", "Desc", "PLANNING",
+        projectMapper.insert("late-project", "Late Project", "Desc", "DRAFT",
                            LocalDate.of(2024, 1, 20), baseDate.plusDays(30), "user", now, now, null, null);
 
         // Act
@@ -266,11 +263,11 @@ class ProjectMapperTest {
         LocalDate searchStart = LocalDate.of(2024, 2, 5);
         LocalDate searchEnd = LocalDate.of(2024, 2, 15);
         
-        projectMapper.insert("early-end-project", "Early End Project", "Desc", "PLANNING",
+        projectMapper.insert("early-end-project", "Early End Project", "Desc", "DRAFT",
                            baseDate, LocalDate.of(2024, 2, 1), "user", now, now, null, null);
-        projectMapper.insert("in-range-end-project", "In Range End Project", "Desc", "PLANNING",
+        projectMapper.insert("in-range-end-project", "In Range End Project", "Desc", "DRAFT",
                            baseDate, LocalDate.of(2024, 2, 10), "user", now, now, null, null);
-        projectMapper.insert("late-end-project", "Late End Project", "Desc", "PLANNING",
+        projectMapper.insert("late-end-project", "Late End Project", "Desc", "DRAFT",
                            baseDate, LocalDate.of(2024, 2, 20), "user", now, now, null, null);
 
         // Act
@@ -290,11 +287,11 @@ class ProjectMapperTest {
     void searchByName_ReturnsMatchingProjects() {
         // Arrange
         LocalDateTime now = LocalDateTime.now();
-        projectMapper.insert("mobile-app-project", "Mobile App Development", "Desc", "PLANNING", 
+        projectMapper.insert("mobile-app-project", "Mobile App Development", "Desc", "DRAFT", 
                            LocalDate.now(), LocalDate.now().plusDays(30), "user", now, now, null, null);
-        projectMapper.insert("web-app-project", "Web Application Project", "Desc", "PLANNING", 
+        projectMapper.insert("web-app-project", "Web Application Project", "Desc", "DRAFT", 
                            LocalDate.now(), LocalDate.now().plusDays(30), "user", now, now, null, null);
-        projectMapper.insert("database-project", "Database Migration", "Desc", "PLANNING", 
+        projectMapper.insert("database-project", "Database Migration", "Desc", "DRAFT", 
                            LocalDate.now(), LocalDate.now().plusDays(30), "user", now, now, null, null);
 
         // Act
@@ -318,7 +315,7 @@ class ProjectMapperTest {
         String originalName = "Original Project";
         LocalDateTime now = LocalDateTime.now();
         
-        projectMapper.insert(id, originalName, "Original Description", "PLANNING", 
+        projectMapper.insert(id, originalName, "Original Description", "DRAFT", 
                            LocalDate.now(), LocalDate.now().plusDays(30), "user", now, now, null, null);
 
         String newName = "Updated Project";
@@ -359,7 +356,7 @@ class ProjectMapperTest {
         String id = "status-update-project";
         LocalDateTime now = LocalDateTime.now();
         
-        projectMapper.insert(id, "Status Project", "Description", "PLANNING", 
+        projectMapper.insert(id, "Status Project", "Description", "DRAFT", 
                            LocalDate.now(), LocalDate.now().plusDays(30), "user", now, now, null, null);
 
         String newStatus = "IN_PROGRESS";
@@ -383,7 +380,7 @@ class ProjectMapperTest {
         String id = "delete-project";
         LocalDateTime now = LocalDateTime.now();
         
-        projectMapper.insert(id, "Delete Project", "Description", "PLANNING", 
+        projectMapper.insert(id, "Delete Project", "Description", "DRAFT", 
                            LocalDate.now(), LocalDate.now().plusDays(30), "user", now, now, null, null);
 
         LocalDateTime deleteTime = now.plusMinutes(1);
@@ -406,7 +403,7 @@ class ProjectMapperTest {
         String name = "Existing Project Name";
         LocalDateTime now = LocalDateTime.now();
         
-        projectMapper.insert("exists-project", name, "Description", "PLANNING", 
+        projectMapper.insert("exists-project", name, "Description", "DRAFT", 
                            LocalDate.now(), LocalDate.now().plusDays(30), "user", now, now, null, null);
 
         // Act
@@ -433,7 +430,7 @@ class ProjectMapperTest {
         String id = "exists-by-id-project";
         LocalDateTime now = LocalDateTime.now();
         
-        projectMapper.insert(id, "Project Name", "Description", "PLANNING", 
+        projectMapper.insert(id, "Project Name", "Description", "DRAFT", 
                            LocalDate.now(), LocalDate.now().plusDays(30), "user", now, now, null, null);
 
         // Act
@@ -460,7 +457,7 @@ class ProjectMapperTest {
         long initialCount = projectMapper.count();
         LocalDateTime now = LocalDateTime.now();
         
-        projectMapper.insert("count-project1", "Count Project 1", "Desc", "PLANNING", 
+        projectMapper.insert("count-project1", "Count Project 1", "Desc", "DRAFT", 
                            LocalDate.now(), LocalDate.now().plusDays(30), "user", now, now, null, null);
         projectMapper.insert("count-project2", "Count Project 2", "Desc", "IN_PROGRESS", 
                            LocalDate.now(), LocalDate.now().plusDays(30), "user", now, now, null, null);
@@ -476,18 +473,18 @@ class ProjectMapperTest {
     @DisplayName("状態別プロジェクト数取得")
     void countByStatus_ReturnsCorrectCount() {
         // Arrange
-        long initialPlanningCount = projectMapper.countByStatus("PLANNING");
+        long initialPlanningCount = projectMapper.countByStatus("DRAFT");
         LocalDateTime now = LocalDateTime.now();
         
-        projectMapper.insert("status-count1", "Status Count 1", "Desc", "PLANNING", 
+        projectMapper.insert("status-count1", "Status Count 1", "Desc", "DRAFT", 
                            LocalDate.now(), LocalDate.now().plusDays(30), "user", now, now, null, null);
-        projectMapper.insert("status-count2", "Status Count 2", "Desc", "PLANNING", 
+        projectMapper.insert("status-count2", "Status Count 2", "Desc", "DRAFT", 
                            LocalDate.now(), LocalDate.now().plusDays(30), "user", now, now, null, null);
         projectMapper.insert("status-count3", "Status Count 3", "Desc", "IN_PROGRESS", 
                            LocalDate.now(), LocalDate.now().plusDays(30), "user", now, now, null, null);
 
         // Act
-        long planningCount = projectMapper.countByStatus("PLANNING");
+        long planningCount = projectMapper.countByStatus("DRAFT");
         long progressCount = projectMapper.countByStatus("IN_PROGRESS");
 
         // Assert
@@ -504,7 +501,7 @@ class ProjectMapperTest {
         LocalDateTime now = LocalDateTime.now();
         
         // プロジェクトを作成
-        projectMapper.insert(projectId, "JIRA Test Project", "Description", "PLANNING",
+        projectMapper.insert(projectId, "JIRA Test Project", "Description", "DRAFT",
                            LocalDate.now(), LocalDate.now().plusDays(30), "user", now, now, null, null);
         
         // JIRAイシューキーを設定
@@ -560,7 +557,7 @@ class ProjectMapperTest {
         String updatedJiraKey = "UPDATED-456";
         LocalDateTime now = LocalDateTime.now();
         
-        projectMapper.insert(projectId, "JIRA Update Test", "Description", "PLANNING",
+        projectMapper.insert(projectId, "JIRA Update Test", "Description", "DRAFT",
                            LocalDate.now(), LocalDate.now().plusDays(30), "user", now, now, null, null);
         
         // 初期のJIRAイシューキーを設定
@@ -598,7 +595,7 @@ class ProjectMapperTest {
         String projectId = "jira-null-update-project";
         LocalDateTime now = LocalDateTime.now();
         
-        projectMapper.insert(projectId, "JIRA Null Update Test", "Description", "PLANNING",
+        projectMapper.insert(projectId, "JIRA Null Update Test", "Description", "DRAFT",
                            LocalDate.now(), LocalDate.now().plusDays(30), "user", now, now, null, null);
         
         // 初期のJIRAイシューキーを設定

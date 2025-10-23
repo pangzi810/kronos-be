@@ -7,26 +7,20 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.test.context.ActiveProfiles;
 import com.devhour.domain.model.entity.JiraSyncHistory;
 import com.devhour.domain.model.entity.JiraSyncHistoryDetail;
 import com.devhour.domain.model.valueobject.DetailStatus;
 import com.devhour.domain.model.valueobject.JiraSyncType;
 
 /**
- * SyncHistoryDetailMapperの統合テスト
- * 
- * JIRA同期履歴詳細マッパーのデータアクセス操作をテスト
- * MyBatisを使用したアノテーションベースのマッピングの動作確認
+ * JiraSyncHistoryDetailMapperの統合テスト
+ *
+ * Testcontainers MySQLコンテナを使用した統合テスト
+ * AbstractMapperTestを継承してクリーンなMySQL環境でテストを実行
  */
-@MybatisTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@ActiveProfiles("test")
-@DisplayName("SyncHistoryDetailMapper統合テスト")
-class JiraSyncHistoryDetailMapperTest {
+@DisplayName("JiraSyncHistoryDetailMapper統合テスト")
+class JiraSyncHistoryDetailMapperTest extends AbstractMapperTest {
 
     @Autowired
     private JiraSyncHistoryDetailMapper syncHistoryDetailMapper;
@@ -77,7 +71,7 @@ class JiraSyncHistoryDetailMapperTest {
             testProjectId,
             "Test Project",
             "Test project description",
-            "PLANNING",
+            "DRAFT",
             testTime.toLocalDate(),
             testTime.toLocalDate().plusDays(30),
             "test-user",

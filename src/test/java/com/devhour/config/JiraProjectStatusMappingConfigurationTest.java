@@ -40,14 +40,14 @@ class JiraProjectStatusMappingConfigurationTest {
         assertEquals(ProjectStatus.IN_PROGRESS, result.get("ONGOING"));
 
         // Check CLOSED mappings (maps external COMPLETED/DONE/etc to internal CLOSED)
-        assertEquals(ProjectStatus.CLOSED, result.get("COMPLETED"));
+        assertEquals(ProjectStatus.CLOSED, result.get("CLOSED"));
         assertEquals(ProjectStatus.CLOSED, result.get("DONE"));
         assertEquals(ProjectStatus.CLOSED, result.get("FINISHED"));
         assertEquals(ProjectStatus.CLOSED, result.get("RESOLVED"));
         assertEquals(ProjectStatus.CLOSED, result.get("CLOSED"));
 
         // Check PLANNING mappings
-        assertEquals(ProjectStatus.DRAFT, result.get("PLANNING"));
+        assertEquals(ProjectStatus.DRAFT, result.get("DRAFT"));
         assertEquals(ProjectStatus.DRAFT, result.get("NEW"));
         assertEquals(ProjectStatus.DRAFT, result.get("OPEN"));
         assertEquals(ProjectStatus.DRAFT, result.get("TO_DO"));

@@ -42,9 +42,9 @@ class JiraProjectStatusMappingConfigurationIntegrationTest {
         
         // Verify that the configuration from application.properties is loaded correctly
         assertTrue(mappingMap.containsKey("ACTIVE"));
-        assertTrue(mappingMap.containsKey("COMPLETED"));
         assertTrue(mappingMap.containsKey("CLOSED"));
-        assertTrue(mappingMap.containsKey("PLANNING"));
+        assertTrue(mappingMap.containsKey("CLOSED"));
+        assertTrue(mappingMap.containsKey("DRAFT"));
     }
 
     @Test

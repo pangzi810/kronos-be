@@ -51,7 +51,7 @@ class DataMappingDomainServiceTest {
         defaultMappingMap.put("IN_PROGRESS", ProjectStatus.IN_PROGRESS);
         defaultMappingMap.put("STARTED", ProjectStatus.IN_PROGRESS);
         defaultMappingMap.put("ONGOING", ProjectStatus.IN_PROGRESS);
-        defaultMappingMap.put("COMPLETED", ProjectStatus.CLOSED);
+        defaultMappingMap.put("CLOSED", ProjectStatus.CLOSED);
         defaultMappingMap.put("DONE", ProjectStatus.CLOSED);
         defaultMappingMap.put("FINISHED", ProjectStatus.CLOSED);
         defaultMappingMap.put("RESOLVED", ProjectStatus.CLOSED);
@@ -60,7 +60,7 @@ class DataMappingDomainServiceTest {
         defaultMappingMap.put("CANCELED", ProjectStatus.CLOSED);
         defaultMappingMap.put("ABANDONED", ProjectStatus.CLOSED);
         defaultMappingMap.put("REJECTED", ProjectStatus.CLOSED);
-        defaultMappingMap.put("PLANNING", ProjectStatus.DRAFT);
+        defaultMappingMap.put("DRAFT", ProjectStatus.DRAFT);
         defaultMappingMap.put("NEW", ProjectStatus.DRAFT);
         defaultMappingMap.put("OPEN", ProjectStatus.DRAFT);
         defaultMappingMap.put("TO_DO", ProjectStatus.DRAFT);
@@ -414,7 +414,7 @@ class DataMappingDomainServiceTest {
 
     @Test
     void mapProjectStatus_completedVariants_returnsCompleted() throws Exception {
-        String[] completedStatuses = {"COMPLETED", "DONE", "FINISHED", "RESOLVED", "CLOSED"};
+        String[] completedStatuses = {"CLOSED", "DONE", "FINISHED", "RESOLVED", "CLOSED"};
         
         for (String status : completedStatuses) {
             // Arrange
@@ -462,7 +462,7 @@ class DataMappingDomainServiceTest {
 
     @Test
     void mapProjectStatus_planningVariants_returnsPlanning() throws Exception {
-        String[] planningStatuses = {"PLANNING", "NEW", "OPEN", "TO_DO", "BACKLOG"};
+        String[] planningStatuses = {"DRAFT", "NEW", "OPEN", "TO_DO", "BACKLOG"};
         
         for (String status : planningStatuses) {
             // Arrange

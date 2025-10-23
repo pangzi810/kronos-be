@@ -12,10 +12,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.test.context.ActiveProfiles;
 
 import com.devhour.domain.model.entity.User;
 import com.devhour.domain.model.entity.WorkRecord;
@@ -23,13 +20,13 @@ import com.devhour.domain.model.valueobject.CategoryCode;
 import com.devhour.domain.model.valueobject.CategoryHours;
 
 /**
- * WorkMapperの統合テスト
+ * WorkRecordMapperの統合テスト
+ *
+ * Testcontainers MySQLコンテナを使用した統合テスト
+ * AbstractMapperTestを継承してクリーンなMySQL環境でテストを実行
  */
-@MybatisTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@ActiveProfiles("test")
 @DisplayName("WorkRecordMapper統合テスト")
-class WorkRecordMapperTest {
+class WorkRecordMapperTest extends AbstractMapperTest {
 
     @Autowired
     private WorkRecordMapper workRecordMapper;
@@ -336,7 +333,7 @@ class WorkRecordMapperTest {
     private void createTestProject(String projectId, String projectName, String createdBy) {
         if (projectMapper.findById(projectId).isEmpty()) {
             LocalDateTime now = LocalDateTime.now();
-            projectMapper.insert(projectId, projectName, "Test Description", "PLANNING",
+            projectMapper.insert(projectId, projectName, "Test Description", "DRAFT",
                                LocalDate.now(), LocalDate.now().plusDays(30), createdBy, now, now, null, null);
         }
     }

@@ -10,21 +10,17 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
-import org.mybatis.spring.boot.test.autoconfigure.MybatisTest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.test.context.ActiveProfiles;
 
 import com.devhour.domain.model.entity.WorkCategory;
 
 /**
  * WorkCategoryMapper integration test
- * Uses @MybatisTest for lightweight MyBatis testing without full Spring context
+ *
+ * Testcontainers MySQLコンテナを使用した統合テスト
+ * AbstractMapperTestを継承してクリーンなMySQL環境でテストを実行
  */
-@MybatisTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@ActiveProfiles("test")
-class WorkCategoryMapperTest {
+class WorkCategoryMapperTest extends AbstractMapperTest {
 
     @Autowired
     private WorkCategoryMapper workCategoryMapper;

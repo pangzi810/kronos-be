@@ -107,16 +107,19 @@ class JiraSyncBatchOptimizationTest {
         
         // バッチサイズの2倍のデータを用意
         List<JsonNode> issueList = createJiraIssueList(TEST_BATCH_SIZE * 2);
-        JiraIssueSearchResponse response = createJiraSearchResponse(issueList);
+        int totalIssues = issueList.size();
 
         // Mock setup
         when(jqlQueryRepository.findActiveQueriesOrderByPriority()).thenReturn(queries);
         when(syncHistoryRepository.save(any(JiraSyncHistory.class))).thenReturn(syncHistory);
         when(responseTemplateRepository.findById(template.getId())).thenReturn(Optional.of(template));
 
-        // Use answer to avoid ambiguous execute method
+        // ページネーション対応: 20件を10件ずつ処理（2回のAPI呼び出し）
+        JiraIssueSearchResponse response1 = createPaginatedResponse(issueList, 0, TEST_BATCH_SIZE, totalIssues);
+        JiraIssueSearchResponse response2 = createPaginatedResponse(issueList, TEST_BATCH_SIZE, TEST_BATCH_SIZE, totalIssues);
+
         when(jiraSyncRetryTemplate.execute(any(), (org.springframework.retry.RecoveryCallback<JiraIssueSearchResponse>) any()))
-            .thenReturn(response);
+            .thenReturn(response1, response2);
 
         // JSON processing mocks
         when(objectMapper.writeValueAsString(any(JsonNode.class))).thenReturn("{}");
@@ -132,9 +135,9 @@ class JiraSyncBatchOptimizationTest {
         // Then: 処理が正常完了すること
         assertNotNull(result, "同期履歴が返されること");
         assertEquals(JiraSyncStatus.COMPLETED, result.getSyncStatus(), "同期が正常完了すること");
-        
-        // JiraClientのリトライテンプレート処理が実行されること
-        verify(jiraSyncRetryTemplate, times(1)).execute(any(), (org.springframework.retry.RecoveryCallback<JiraIssueSearchResponse>) any());
+
+        // JiraClientのリトライテンプレート処理が2回実行されること（ページネーション）
+        verify(jiraSyncRetryTemplate, times(2)).execute(any(), (org.springframework.retry.RecoveryCallback<JiraIssueSearchResponse>) any());
     }
     
     @Test
@@ -150,14 +153,20 @@ class JiraSyncBatchOptimizationTest {
         
         // バッチサイズを上回るデータでメモリ効率処理をトリガー
         List<JsonNode> largeIssueList = createJiraIssueList(TEST_BATCH_SIZE + 10);
-        JiraIssueSearchResponse largeResponse = createJiraSearchResponse(largeIssueList);
+        int totalIssues = largeIssueList.size();
 
         // Mock setup
         when(jqlQueryRepository.findActiveQueriesOrderByPriority()).thenReturn(queries);
         when(syncHistoryRepository.save(any(JiraSyncHistory.class))).thenReturn(syncHistory);
         when(responseTemplateRepository.findById(template.getId())).thenReturn(Optional.of(template));
+
+        // ページネーション対応: 呼び出しごとに異なるstartAtを返す
+        JiraIssueSearchResponse response1 = createPaginatedResponse(largeIssueList, 0, TEST_BATCH_SIZE, totalIssues);
+        JiraIssueSearchResponse response2 = createPaginatedResponse(largeIssueList, TEST_BATCH_SIZE, TEST_BATCH_SIZE, totalIssues);
+        JiraIssueSearchResponse response3 = createPaginatedResponse(largeIssueList, TEST_BATCH_SIZE * 2, TEST_BATCH_SIZE, totalIssues);
+
         when(jiraSyncRetryTemplate.execute(any(), (org.springframework.retry.RecoveryCallback<JiraIssueSearchResponse>) any()))
-            .thenReturn(largeResponse);
+            .thenReturn(response1, response2, response3);
 
         // JSON processing mocks
         when(objectMapper.writeValueAsString(any(JsonNode.class))).thenReturn("{}");
@@ -189,14 +198,20 @@ class JiraSyncBatchOptimizationTest {
         
         // 進捗確認用のデータ
         List<JsonNode> issueList = createJiraIssueList(25);
-        JiraIssueSearchResponse response = createJiraSearchResponse(issueList);
+        int totalIssues = issueList.size();
 
         // Mock setup
         when(jqlQueryRepository.findActiveQueriesOrderByPriority()).thenReturn(queries);
         when(syncHistoryRepository.save(any(JiraSyncHistory.class))).thenReturn(syncHistory);
         when(responseTemplateRepository.findById(template.getId())).thenReturn(Optional.of(template));
+
+        // ページネーション対応: 25件を10件ずつ処理（3回のAPI呼び出し）
+        JiraIssueSearchResponse response1 = createPaginatedResponse(issueList, 0, TEST_BATCH_SIZE, totalIssues);
+        JiraIssueSearchResponse response2 = createPaginatedResponse(issueList, TEST_BATCH_SIZE, TEST_BATCH_SIZE, totalIssues);
+        JiraIssueSearchResponse response3 = createPaginatedResponse(issueList, TEST_BATCH_SIZE * 2, TEST_BATCH_SIZE, totalIssues);
+
         when(jiraSyncRetryTemplate.execute(any(), (org.springframework.retry.RecoveryCallback<JiraIssueSearchResponse>) any()))
-            .thenReturn(response);
+            .thenReturn(response1, response2, response3);
 
         // JSON processing mocks
         when(objectMapper.writeValueAsString(any(JsonNode.class))).thenReturn("{}");
@@ -228,14 +243,22 @@ class JiraSyncBatchOptimizationTest {
         JiraJqlQuery testQuery = queries.get(0);
         
         List<JsonNode> issueList = createJiraIssueList(50);
-        JiraIssueSearchResponse response = createJiraSearchResponse(issueList);
+        int totalIssues = issueList.size();
 
         // Mock setup
         when(jqlQueryRepository.findActiveQueriesOrderByPriority()).thenReturn(queries);
         when(syncHistoryRepository.save(any(JiraSyncHistory.class))).thenReturn(syncHistory);
         when(responseTemplateRepository.findById(template.getId())).thenReturn(Optional.of(template));
+
+        // ページネーション対応: 50件を10件ずつ処理（5回のAPI呼び出し）
+        JiraIssueSearchResponse response1 = createPaginatedResponse(issueList, 0, TEST_BATCH_SIZE, totalIssues);
+        JiraIssueSearchResponse response2 = createPaginatedResponse(issueList, TEST_BATCH_SIZE, TEST_BATCH_SIZE, totalIssues);
+        JiraIssueSearchResponse response3 = createPaginatedResponse(issueList, TEST_BATCH_SIZE * 2, TEST_BATCH_SIZE, totalIssues);
+        JiraIssueSearchResponse response4 = createPaginatedResponse(issueList, TEST_BATCH_SIZE * 3, TEST_BATCH_SIZE, totalIssues);
+        JiraIssueSearchResponse response5 = createPaginatedResponse(issueList, TEST_BATCH_SIZE * 4, TEST_BATCH_SIZE, totalIssues);
+
         when(jiraSyncRetryTemplate.execute(any(), (org.springframework.retry.RecoveryCallback<JiraIssueSearchResponse>) any()))
-            .thenReturn(response);
+            .thenReturn(response1, response2, response3, response4, response5);
 
         // JSON processing mocks
         when(objectMapper.writeValueAsString(any(JsonNode.class))).thenReturn("{}");
@@ -314,7 +337,18 @@ class JiraSyncBatchOptimizationTest {
     
     private JiraIssueSearchResponse createJiraSearchResponse(List<JsonNode> issues) {
         JiraIssueSearchResponse response = new JiraIssueSearchResponse();
+        response.setStartAt(0);
+        response.setTotal(issues.size());
         response.setMaxResults(issues.size());
+        response.setIssues(issues);
+        return response;
+    }
+
+    private JiraIssueSearchResponse createPaginatedResponse(List<JsonNode> issues, int startAt, int maxResults, int total) {
+        JiraIssueSearchResponse response = new JiraIssueSearchResponse();
+        response.setStartAt(startAt);
+        response.setMaxResults(maxResults);
+        response.setTotal(total);
         response.setIssues(issues);
         return response;
     }

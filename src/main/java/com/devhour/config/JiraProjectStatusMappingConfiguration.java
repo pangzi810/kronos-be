@@ -27,9 +27,9 @@ import lombok.extern.slf4j.Slf4j;
 public class JiraProjectStatusMappingConfiguration {
     
     /**
-     * PLANNINGにマッピングするJIRAステータス文字列のリスト
+     * DRAFTにマッピングするJIRAステータス文字列のリスト
      */
-    private String draft = "PLANNING,NEW,OPEN,TO_DO,BACKLOG";
+    private String draft = "DRAFT,NEW,OPEN,TO_DO,BACKLOG";
     
     /**
      * IN_PROGRESSにマッピングするJIRAステータス文字列のリスト

@@ -149,7 +149,7 @@ class JiraClientTest {
         
         String capturedUrl = urlCaptor.getValue();
         assertThat(capturedUrl).contains("maxResults=50");
-        assertThat(capturedUrl).contains("nextPageToken=");
+        assertThat(capturedUrl).contains("startAt=0");
     }
 
     @Test
