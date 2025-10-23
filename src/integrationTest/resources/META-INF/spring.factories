@@ -1,5 +1,0 @@
-# Disable Okta EnvironmentPostProcessor for tests
-# This file overrides the default spring.factories to prevent Okta autoconfiguration during tests
-
-# Empty - prevents any Okta environment post processors from running
-org.springframework.boot.env.EnvironmentPostProcessor=

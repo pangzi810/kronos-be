@@ -12,7 +12,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.jdbc.Sql;
 
 import com.devhour.domain.model.entity.ApprovalAuthority;
 import com.devhour.domain.model.valueobject.Position;
@@ -55,22 +54,41 @@ class ApprovalAuthorityMapperTest extends AbstractMapperTest {
     class FindAllOperations {
 
         @Test
-        @Sql("/test-data/approval-authorities-setup.sql")
         @DisplayName("findAll - 複数レコード存在時は作成日昇順で取得")
-        void findAll_MultipleRecords_ReturnsOrderedByCreatedAt() {
+        void findAll_MultipleRecords_ReturnsOrderedByCreatedAt() throws InterruptedException {
+            // Arrange - テストデータを作成
+            ApprovalAuthority auth1 = ApprovalAuthority.create(
+                "testuser1@example.com", "山田太郎", Position.MANAGER,
+                "L1001", "開発本部", "L2001", "システム開発部", "L3001", "Webアプリ課", null, null);
+            approvalAuthorityMapper.insert(auth1);
+
+            Thread.sleep(10);
+
+            ApprovalAuthority auth2 = ApprovalAuthority.create(
+                "testuser2@example.com", "佐藤花子", Position.DEPARTMENT_MANAGER,
+                "L1001", "開発本部", "L2002", "インフラ部", null, null, null, null);
+            approvalAuthorityMapper.insert(auth2);
+
+            Thread.sleep(10);
+
+            ApprovalAuthority auth3 = ApprovalAuthority.create(
+                "testuser3@example.com", "田中次郎", Position.DIVISION_MANAGER,
+                "L1002", "営業本部", null, null, null, null, null, null);
+            approvalAuthorityMapper.insert(auth3);
+
             // Act
             List<ApprovalAuthority> result = approvalAuthorityMapper.findAll();
 
             // Assert
             assertThat(result).isNotEmpty();
             assertThat(result.size()).isGreaterThanOrEqualTo(3);
-            
+
             // 作成日昇順であることを確認
             for (int i = 0; i < result.size() - 1; i++) {
                 assertThat(result.get(i).getCreatedAt())
                     .isBeforeOrEqualTo(result.get(i + 1).getCreatedAt());
             }
-            
+
             // Position TypeHandlerの動作確認
             assertThat(result.stream())
                 .allMatch(authority -> authority.getPosition() != null);
