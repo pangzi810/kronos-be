@@ -365,7 +365,7 @@ class ProjectTest {
     }
 
     @Test
-    @DisplayName("プロジェクト開始 - PLANNING状態以外では例外")
+    @DisplayName("プロジェクト開始 - DRAFT状態以外では例外")
     void start_NonPlanningStatus_ThrowsException() {
         // Arrange
         Project project = Project.create(
@@ -394,7 +394,7 @@ class ProjectTest {
             LocalDate.now().plusMonths(3),
             "user123"
         );
-        // PLANNING状態のまま完了しようとする
+        // DRAFT状態のまま完了しようとする
 
         // Act & Assert
         assertThatThrownBy(() -> project.close(LocalDate.now().plusDays(10)))
@@ -440,7 +440,7 @@ class ProjectTest {
         assertThat(result).contains("Project{");
         assertThat(result).contains("id=");
         assertThat(result).contains("name='Test Project'");
-        assertThat(result).contains("status=PLANNING");
+        assertThat(result).contains("status=DRAFT");
     }
 
     @Test
@@ -1152,7 +1152,7 @@ class ProjectTest {
         assertThat(result).contains("Project{");
         assertThat(result).contains("id=");
         assertThat(result).contains("name='Test Project'");
-        assertThat(result).contains("status=PLANNING");
+        assertThat(result).contains("status=DRAFT");
         assertThat(result).contains("jiraIssueKey='PROJ-123'");
     }
 
@@ -1175,7 +1175,7 @@ class ProjectTest {
         assertThat(result).contains("Project{");
         assertThat(result).contains("id=");
         assertThat(result).contains("name='Test Project'");
-        assertThat(result).contains("status=PLANNING");
+        assertThat(result).contains("status=DRAFT");
         assertThat(result).contains("jiraIssueKey=null");
     }
 

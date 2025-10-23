@@ -39,18 +39,12 @@ class JiraProjectStatusMappingConfigurationTest {
         assertEquals(ProjectStatus.IN_PROGRESS, result.get("STARTED"));
         assertEquals(ProjectStatus.IN_PROGRESS, result.get("ONGOING"));
 
-        // Check COMPLETED mappings
-        assertEquals(ProjectStatus.DRAFT, result.get("COMPLETED"));
-        assertEquals(ProjectStatus.DRAFT, result.get("DONE"));
-        assertEquals(ProjectStatus.DRAFT, result.get("FINISHED"));
-        assertEquals(ProjectStatus.DRAFT, result.get("RESOLVED"));
-        assertEquals(ProjectStatus.DRAFT, result.get("CLOSED"));
-
-        // Check CANCELLED mappings
-        assertEquals(ProjectStatus.DRAFT, result.get("CANCELLED"));
-        assertEquals(ProjectStatus.DRAFT, result.get("CANCELED"));
-        assertEquals(ProjectStatus.DRAFT, result.get("ABANDONED"));
-        assertEquals(ProjectStatus.DRAFT, result.get("REJECTED"));
+        // Check CLOSED mappings (maps external COMPLETED/DONE/etc to internal CLOSED)
+        assertEquals(ProjectStatus.CLOSED, result.get("COMPLETED"));
+        assertEquals(ProjectStatus.CLOSED, result.get("DONE"));
+        assertEquals(ProjectStatus.CLOSED, result.get("FINISHED"));
+        assertEquals(ProjectStatus.CLOSED, result.get("RESOLVED"));
+        assertEquals(ProjectStatus.CLOSED, result.get("CLOSED"));
 
         // Check PLANNING mappings
         assertEquals(ProjectStatus.DRAFT, result.get("PLANNING"));
@@ -64,8 +58,7 @@ class JiraProjectStatusMappingConfigurationTest {
     void buildStatusMappingMap_customConfiguration_success() {
         // Arrange
         config.setInProgress("CUSTOM_ACTIVE,CUSTOM_PROGRESS");
-        config.setClosed("CUSTOM_DONE");
-        config.setClosed("CUSTOM_CANCELLED");
+        config.setClosed("CUSTOM_DONE,CUSTOM_CANCELLED");
         config.setDraft("CUSTOM_PLANNING");
 
         // Act
@@ -75,8 +68,8 @@ class JiraProjectStatusMappingConfigurationTest {
         assertNotNull(result);
         assertEquals(ProjectStatus.IN_PROGRESS, result.get("CUSTOM_ACTIVE"));
         assertEquals(ProjectStatus.IN_PROGRESS, result.get("CUSTOM_PROGRESS"));
-        assertEquals(ProjectStatus.DRAFT, result.get("CUSTOM_DONE"));
-        assertEquals(ProjectStatus.DRAFT, result.get("CUSTOM_CANCELLED"));
+        assertEquals(ProjectStatus.CLOSED, result.get("CUSTOM_DONE"));
+        assertEquals(ProjectStatus.CLOSED, result.get("CUSTOM_CANCELLED"));
         assertEquals(ProjectStatus.DRAFT, result.get("CUSTOM_PLANNING"));
     }
 
@@ -84,7 +77,6 @@ class JiraProjectStatusMappingConfigurationTest {
     void buildStatusMappingMap_emptyConfiguration_returnsEmptyMap() {
         // Arrange
         config.setInProgress("");
-        config.setClosed("");
         config.setClosed("");
         config.setDraft("");
 
@@ -100,7 +92,6 @@ class JiraProjectStatusMappingConfigurationTest {
     void buildStatusMappingMap_nullConfiguration_returnsEmptyMap() {
         // Arrange
         config.setInProgress(null);
-        config.setClosed(null);
         config.setClosed(null);
         config.setDraft(null);
 
@@ -215,7 +206,7 @@ class JiraProjectStatusMappingConfigurationTest {
     @Test
     void getDefaultStatus_caseInsensitive_success() {
         // Arrange
-        config.setDefaultStatus("completed");
+        config.setDefaultStatus("closed");
 
         // Act
         ProjectStatus result = config.getDefaultStatus();
@@ -238,7 +229,6 @@ class JiraProjectStatusMappingConfigurationTest {
         // Arrange
         config.setInProgress("");
         config.setClosed("DONE");
-        config.setClosed("");
         config.setDraft("");
 
         // Act
@@ -252,7 +242,6 @@ class JiraProjectStatusMappingConfigurationTest {
     void isValid_noFieldsSet_returnsFalse() {
         // Arrange
         config.setInProgress("");
-        config.setClosed("");
         config.setClosed("");
         config.setDraft("");
 
@@ -268,7 +257,6 @@ class JiraProjectStatusMappingConfigurationTest {
         // Arrange
         config.setInProgress(null);
         config.setClosed(null);
-        config.setClosed(null);
         config.setDraft(null);
 
         // Act
@@ -282,7 +270,6 @@ class JiraProjectStatusMappingConfigurationTest {
     void isValid_whitespaceFields_returnsFalse() {
         // Arrange
         config.setInProgress("   ");
-        config.setClosed("   ");
         config.setClosed("   ");
         config.setDraft("   ");
 
