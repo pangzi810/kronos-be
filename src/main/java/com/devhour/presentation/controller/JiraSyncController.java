@@ -1,6 +1,7 @@
 package com.devhour.presentation.controller;
 
 import java.time.LocalDate;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -59,6 +60,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/jira")
 @Validated
 @Slf4j
+@ConditionalOnProperty(name = "jira.integration.enabled", havingValue = "true", matchIfMissing = false)
 public class JiraSyncController {
     
     private final JiraSyncApplicationService jiraSyncApplicationService;
@@ -87,11 +89,11 @@ public class JiraSyncController {
     public ResponseEntity<JiraConnectionResponse> getConnection() {
         JiraConnectionResponse response = JiraConnectionResponse.of(
             jiraConfiguration.getBaseUrl(),
-            jiraConfiguration.getAuth().getTokenEnvKey(),
-            jiraConfiguration.getAuth().getUsernameEnvKey(),
+            "JIRA_API_TOKEN",      // 環境変数キー名（固定値）
+            "JIRA_USERNAME",        // 環境変数キー名（固定値）
             jiraConfiguration.isAuthenticationConfigured()
         );
-        
+
         return ResponseEntity.ok(response);
     }
     

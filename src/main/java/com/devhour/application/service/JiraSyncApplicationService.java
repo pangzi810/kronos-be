@@ -3,6 +3,7 @@ package com.devhour.application.service;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.RetryContext;
@@ -55,6 +56,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Transactional
 @Slf4j
+@ConditionalOnProperty(name = "jira.integration.enabled", havingValue = "true", matchIfMissing = false)
 public class JiraSyncApplicationService {
     
     private final JiraJqlQueryRepository jqlQueryRepository;
@@ -229,7 +231,7 @@ public class JiraSyncApplicationService {
             try {
                 long startTime = performanceMonitoringEnabled ? System.currentTimeMillis() : 0;
                 // リトライ可能なJQLクエリ実行
-                response = executeJqlQueryWithRetry(query, response != null ? response.getNextPageToken() : null);
+                response = executeJqlQueryWithRetry(query, response != null ? response.getStartAt() : null);
                 
                 int totalIssues = response.getIssues().size();
                 log.info("JQLクエリ実行結果: {} 件のイシューを取得 (クエリ: {})", totalIssues, query.getQueryName());
@@ -280,7 +282,7 @@ public class JiraSyncApplicationService {
                 log.error("JQLクエリ実行中に予期しないエラーが発生: {} - {}", query.getQueryName(), e.getMessage(), e);
                 throw new JiraSyncException("JQLクエリ実行中のエラー: " + e.getMessage(), e);
             }
-        } while (response.getNextPageToken() != null);
+        } while (response.getStartAt() + batchSize < response.getTotal());
     }
     
     /**
@@ -345,7 +347,7 @@ public class JiraSyncApplicationService {
      * @throws JiraRateLimitException レート制限エラーの場合（REQ-8.3）
      * @throws JiraSyncException その他のエラーの場合
      */
-    private JiraIssueSearchResponse executeJqlQueryWithRetry(JiraJqlQuery query, String nextPageToken) {
+    private JiraIssueSearchResponse executeJqlQueryWithRetry(JiraJqlQuery query, Integer startAt) {
         return jiraSyncRetryTemplate.execute(new RetryCallback<JiraIssueSearchResponse, RuntimeException>() {
             @Override
             public JiraIssueSearchResponse doWithRetry(RetryContext context) throws RuntimeException {
@@ -358,7 +360,7 @@ public class JiraSyncApplicationService {
                     return jiraClient.searchIssues(
                         query.getJqlExpression(), 
                         50, // maxResults
-                        nextPageToken   // startAt
+                        startAt   // startAt
                     );
                     
                 } catch (JiraRateLimitException e) {

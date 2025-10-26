@@ -90,20 +90,18 @@ public class JiraConfiguration {
     
     /**
      * 認証設定の内部クラス
+     *
+     * Spring Bootのプロパティバインディングにより、
+     * jira.auth.token=${JIRA_API_TOKEN} として環境変数から自動取得
      */
     @Data
     public static class AuthConfig {
         /**
-         * ユーザー名の環境変数キー
+         * JIRA認証用APIトークン（必須）
+         * 環境変数 JIRA_API_TOKEN から自動マッピング
          */
-        @NotBlank(message = "ユーザー名環境変数キーは必須です")
-        private String usernameEnvKey = "JIRA_USERNAME";
-        
-        /**
-         * APIトークンの環境変数キー
-         */
-        @NotBlank(message = "APIトークン環境変数キーは必須です")
-        private String tokenEnvKey = "JIRA_API_TOKEN";
+        @NotBlank(message = "APIトークンは必須です")
+        private String token;
     }
     
     /**
@@ -116,23 +114,6 @@ public class JiraConfiguration {
                && isAuthenticationConfigured();
     }
     
-    /**
-     * 環境変数からユーザー名を取得
-     * 
-     * @return 環境変数から取得したユーザー名、設定されていない場合null
-     */
-    public String getAuthUsername() {
-        return System.getenv(auth.getUsernameEnvKey());
-    }
-    
-    /**
-     * 環境変数からAPIトークンを取得
-     * 
-     * @return 環境変数から取得したAPIトークン、設定されていない場合null
-     */
-    public String getAuthToken() {
-        return System.getenv(auth.getTokenEnvKey());
-    }
     
     /**
      * 完全なAPI URLを構築
@@ -176,26 +157,24 @@ public class JiraConfiguration {
             throw new IllegalArgumentException("無効なJIRA Base URL: " + baseUrl, e);
         }
         
-        // 認証設定検証
+        // 認証設定検証（APIトークンのみ）
         if (!isAuthenticationConfigured()) {
-            throw new IllegalArgumentException("JIRA認証情報が設定されていません。環境変数 " 
-                + auth.getUsernameEnvKey() + " または " + auth.getTokenEnvKey() + " を設定してください");
+            throw new IllegalArgumentException("JIRA APIトークンが設定されていません。"
+                + "環境変数 JIRA_API_TOKEN を設定するか、"
+                + "application.properties で jira.auth.token を設定してください");
         }
     }
     
     /**
      * 認証設定が構成されているかをチェック
-     * 
-     * @return 認証情報が設定されている場合true（ユーザー名+トークン または トークンのみ）
+     *
+     * @return APIトークンが設定されている場合true
      */
     public boolean isAuthenticationConfigured() {
-        String username = getAuthUsername();
-        String token = getAuthToken();
-        
-        // APIトークンのみでも認証可能（Modern Atlassian Cloud）
-        return (token != null && !token.trim().isEmpty()) || 
-               (username != null && !username.trim().isEmpty() && 
-                token != null && !token.trim().isEmpty());
+        String token = auth.getToken();
+
+        // APIトークンのみで認証可能
+        return token != null && !token.trim().isEmpty();
     }
     
     /**

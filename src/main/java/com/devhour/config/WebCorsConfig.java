@@ -34,10 +34,14 @@ public class WebCorsConfig {
         // 開発環境を許可
         configuration.setAllowedOriginPatterns(Arrays.asList(
             "http://localhost:3000",           // フロントエンド開発サーバー
-            "http://localhost:5173",           // Vite default port  
-            "http://localhost:5174",           // Vite alternate port
-            "http://127.0.0.1:5173",           // Vite with IP
-            "http://127.0.0.1:5174"            // Vite alternate with IP
+            "http://localhost:4173",           // Vite preview default port
+            "http://localhost:4174",           // Vite preview alternate port
+            "http://localhost:5173",           // Vite dev default port
+            "http://localhost:5174",           // Vite dev alternate port
+            "http://127.0.0.1:4173",           // Vite preview with IP
+            "http://127.0.0.1:4174",           // Vite preview alternate with IP
+            "http://127.0.0.1:5173",           // Vite dev with IP
+            "http://127.0.0.1:5174"            // Vite dev alternate with IP
         ));
         
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));

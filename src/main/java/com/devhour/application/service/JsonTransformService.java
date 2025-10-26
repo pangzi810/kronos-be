@@ -53,8 +53,6 @@ public class JsonTransformService {
         this.velocityTemplateProcessor = velocityTemplateProcessor;
         this.responseTemplateRepository = responseTemplateRepository;
         this.objectMapper = objectMapper;
-
-        log.info("JsonTransformService initialized with template management capabilities");
     }
     
     /**

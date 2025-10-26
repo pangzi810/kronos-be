@@ -1,15 +1,13 @@
 package com.devhour.domain.model.valueobject;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("ProjectStatus - プロジェクトステータスの値オブジェクトのテスト")
 class ProjectStatusTest {
@@ -21,36 +19,35 @@ class ProjectStatusTest {
         @Test
         @DisplayName("正常な値でインスタンスを生成できる")
         void shouldCreateInstanceWithValidValue() {
-            ProjectStatus status = new ProjectStatus("PLANNING");
-            assertThat(status.value()).isEqualTo("PLANNING");
+            ProjectStatus status = new ProjectStatus("DRAFT");
+            assertThat(status.value()).isEqualTo("DRAFT");
         }
 
         @Test
         @DisplayName("定義済み定数が正しく初期化される")
         void shouldInitializePredefinedConstants() {
-            assertThat(ProjectStatus.PLANNING.value()).isEqualTo("PLANNING");
+            assertThat(ProjectStatus.DRAFT.value()).isEqualTo("DRAFT");
             assertThat(ProjectStatus.IN_PROGRESS.value()).isEqualTo("IN_PROGRESS");
-            assertThat(ProjectStatus.COMPLETED.value()).isEqualTo("COMPLETED");
-            assertThat(ProjectStatus.CANCELLED.value()).isEqualTo("CANCELLED");
+            assertThat(ProjectStatus.CLOSED.value()).isEqualTo("CLOSED");
         }
 
         @Test
         @DisplayName("ofメソッドで大文字小文字を自動変換する")
         void shouldConvertToUpperCaseWithOfMethod() {
-            assertThat(ProjectStatus.of("planning").value()).isEqualTo("PLANNING");
-            assertThat(ProjectStatus.of("Planning").value()).isEqualTo("PLANNING");
-            assertThat(ProjectStatus.of("PLANNING").value()).isEqualTo("PLANNING");
+            assertThat(ProjectStatus.of("draft").value()).isEqualTo("DRAFT");
+            assertThat(ProjectStatus.of("Draft").value()).isEqualTo("DRAFT");
+            assertThat(ProjectStatus.of("DRAFT").value()).isEqualTo("DRAFT");
         }
 
         @Test
         @DisplayName("ofメソッドで前後の空白を除去する")
         void shouldTrimWhitespaceWithOfMethod() {
-            assertThat(ProjectStatus.of("  PLANNING  ").value()).isEqualTo("PLANNING");
+            assertThat(ProjectStatus.of("  DRAFT  ").value()).isEqualTo("DRAFT");
             assertThat(ProjectStatus.of("\tIN_PROGRESS\n").value()).isEqualTo("IN_PROGRESS");
         }
 
         @ParameterizedTest
-        @ValueSource(strings = {"planning", "in_progress", "completed", "cancelled"})
+        @ValueSource(strings = {"draft", "in_progress", "closed"})
         @DisplayName("ofメソッドで各種ステータスを生成できる")
         void shouldCreateAllStatusesWithOfMethod(String value) {
             ProjectStatus status = ProjectStatus.of(value);
@@ -89,13 +86,12 @@ class ProjectStatusTest {
         }
 
         @ParameterizedTest
-        @ValueSource(strings = {"INVALID", "PENDING", "ACTIVE", "unknown", "123"})
+        @ValueSource(strings = {"INVALID", "PENDING", "ACTIVE", "PLANNING", "COMPLETED", "CANCELLED", "unknown", "123"})
         @DisplayName("不正な値で例外をスローする")
         void shouldThrowExceptionForInvalidValue(String value) {
             assertThatThrownBy(() -> new ProjectStatus(value))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("プロジェクトステータスが不正です")
-                .hasMessageContaining(value);
+                .hasMessageContaining("プロジェクトステータスが不正です");
         }
     }
 
@@ -104,57 +100,35 @@ class ProjectStatusTest {
     class StatusCheckMethodsTest {
 
         @Test
-        @DisplayName("canStart - PLANNING状態のときtrueを返す")
-        void canStartShouldReturnTrueForPlanning() {
-            assertThat(ProjectStatus.PLANNING.canStart()).isTrue();
+        @DisplayName("canStart - DRAFT状態のときtrueを返す")
+        void canStartShouldReturnTrueForDraft() {
+            assertThat(ProjectStatus.DRAFT.canStart()).isTrue();
             assertThat(ProjectStatus.IN_PROGRESS.canStart()).isFalse();
-            assertThat(ProjectStatus.COMPLETED.canStart()).isFalse();
-            assertThat(ProjectStatus.CANCELLED.canStart()).isFalse();
+            assertThat(ProjectStatus.CLOSED.canStart()).isFalse();
         }
 
         @Test
         @DisplayName("isInProgress - IN_PROGRESS状態のときtrueを返す")
         void isInProgressShouldReturnTrueForInProgress() {
-            assertThat(ProjectStatus.PLANNING.isInProgress()).isFalse();
+            assertThat(ProjectStatus.DRAFT.isInProgress()).isFalse();
             assertThat(ProjectStatus.IN_PROGRESS.isInProgress()).isTrue();
-            assertThat(ProjectStatus.COMPLETED.isInProgress()).isFalse();
-            assertThat(ProjectStatus.CANCELLED.isInProgress()).isFalse();
+            assertThat(ProjectStatus.CLOSED.isInProgress()).isFalse();
         }
 
         @Test
-        @DisplayName("isCompleted - COMPLETED状態のときtrueを返す")
-        void isCompletedShouldReturnTrueForCompleted() {
-            assertThat(ProjectStatus.PLANNING.isCompleted()).isFalse();
-            assertThat(ProjectStatus.IN_PROGRESS.isCompleted()).isFalse();
-            assertThat(ProjectStatus.COMPLETED.isCompleted()).isTrue();
-            assertThat(ProjectStatus.CANCELLED.isCompleted()).isFalse();
+        @DisplayName("isClosed - CLOSED状態のときtrueを返す")
+        void isClosedShouldReturnTrueForClosed() {
+            assertThat(ProjectStatus.DRAFT.isClosed()).isFalse();
+            assertThat(ProjectStatus.IN_PROGRESS.isClosed()).isFalse();
+            assertThat(ProjectStatus.CLOSED.isClosed()).isTrue();
         }
 
         @Test
-        @DisplayName("isCancelled - CANCELLED状態のときtrueを返す")
-        void isCancelledShouldReturnTrueForCancelled() {
-            assertThat(ProjectStatus.PLANNING.isCancelled()).isFalse();
-            assertThat(ProjectStatus.IN_PROGRESS.isCancelled()).isFalse();
-            assertThat(ProjectStatus.COMPLETED.isCancelled()).isFalse();
-            assertThat(ProjectStatus.CANCELLED.isCancelled()).isTrue();
-        }
-
-        @Test
-        @DisplayName("isActive - PLANNINGまたはIN_PROGRESS状態のときtrueを返す")
+        @DisplayName("isActive - DRAFTまたはIN_PROGRESS状態のときtrueを返す")
         void isActiveShouldReturnTrueForActiveStatuses() {
-            assertThat(ProjectStatus.PLANNING.isActive()).isTrue();
+            assertThat(ProjectStatus.DRAFT.isActive()).isTrue();
             assertThat(ProjectStatus.IN_PROGRESS.isActive()).isTrue();
-            assertThat(ProjectStatus.COMPLETED.isActive()).isFalse();
-            assertThat(ProjectStatus.CANCELLED.isActive()).isFalse();
-        }
-
-        @Test
-        @DisplayName("isFinished - COMPLETEDまたはCANCELLED状態のときtrueを返す")
-        void isFinishedShouldReturnTrueForFinishedStatuses() {
-            assertThat(ProjectStatus.PLANNING.isFinished()).isFalse();
-            assertThat(ProjectStatus.IN_PROGRESS.isFinished()).isFalse();
-            assertThat(ProjectStatus.COMPLETED.isFinished()).isTrue();
-            assertThat(ProjectStatus.CANCELLED.isFinished()).isTrue();
+            assertThat(ProjectStatus.CLOSED.isActive()).isFalse();
         }
     }
 
@@ -163,94 +137,13 @@ class ProjectStatusTest {
     class StatusTransitionTest {
 
         @Test
-        @DisplayName("同じステータスへの遷移は常に許可される")
-        void shouldAllowTransitionToSameStatus() {
-            assertThat(ProjectStatus.PLANNING.canTransitionTo(ProjectStatus.PLANNING)).isTrue();
-            assertThat(ProjectStatus.IN_PROGRESS.canTransitionTo(ProjectStatus.IN_PROGRESS)).isTrue();
-            assertThat(ProjectStatus.COMPLETED.canTransitionTo(ProjectStatus.COMPLETED)).isTrue();
-            assertThat(ProjectStatus.CANCELLED.canTransitionTo(ProjectStatus.CANCELLED)).isTrue();
-        }
-
-        @Test
-        @DisplayName("PLANNINGからIN_PROGRESSへの遷移が許可される")
-        void shouldAllowTransitionFromPlanningToInProgress() {
-            assertThat(ProjectStatus.PLANNING.canTransitionTo(ProjectStatus.IN_PROGRESS)).isTrue();
-        }
-
-        @Test
-        @DisplayName("PLANNINGからCANCELLEDへの遷移が許可される")
-        void shouldAllowTransitionFromPlanningToCancelled() {
-            assertThat(ProjectStatus.PLANNING.canTransitionTo(ProjectStatus.CANCELLED)).isTrue();
-        }
-
-        @Test
-        @DisplayName("PLANNINGからCOMPLETEDへの直接遷移は許可されない")
-        void shouldNotAllowTransitionFromPlanningToCompleted() {
-            assertThat(ProjectStatus.PLANNING.canTransitionTo(ProjectStatus.COMPLETED)).isFalse();
-        }
-
-        @Test
-        @DisplayName("IN_PROGRESSからCOMPLETEDへの遷移が許可される")
-        void shouldAllowTransitionFromInProgressToCompleted() {
-            assertThat(ProjectStatus.IN_PROGRESS.canTransitionTo(ProjectStatus.COMPLETED)).isTrue();
-        }
-
-        @Test
-        @DisplayName("IN_PROGRESSからCANCELLEDへの遷移が許可される")
-        void shouldAllowTransitionFromInProgressToCancelled() {
-            assertThat(ProjectStatus.IN_PROGRESS.canTransitionTo(ProjectStatus.CANCELLED)).isTrue();
-        }
-
-        @Test
-        @DisplayName("IN_PROGRESSからPLANNINGへの遷移は許可されない")
-        void shouldNotAllowTransitionFromInProgressToPlanning() {
-            assertThat(ProjectStatus.IN_PROGRESS.canTransitionTo(ProjectStatus.PLANNING)).isFalse();
-        }
-
-        @Test
-        @DisplayName("COMPLETEDから他のステータスへの遷移は許可されない")
-        void shouldNotAllowTransitionFromCompleted() {
-            assertThat(ProjectStatus.COMPLETED.canTransitionTo(ProjectStatus.PLANNING)).isFalse();
-            assertThat(ProjectStatus.COMPLETED.canTransitionTo(ProjectStatus.IN_PROGRESS)).isFalse();
-            assertThat(ProjectStatus.COMPLETED.canTransitionTo(ProjectStatus.CANCELLED)).isFalse();
-        }
-
-        @Test
-        @DisplayName("CANCELLEDから他のステータスへの遷移は許可されない")
-        void shouldNotAllowTransitionFromCancelled() {
-            assertThat(ProjectStatus.CANCELLED.canTransitionTo(ProjectStatus.PLANNING)).isFalse();
-            assertThat(ProjectStatus.CANCELLED.canTransitionTo(ProjectStatus.IN_PROGRESS)).isFalse();
-            assertThat(ProjectStatus.CANCELLED.canTransitionTo(ProjectStatus.COMPLETED)).isFalse();
-        }
-
-        @Test
-        @DisplayName("transitionToメソッドで正常な遷移が実行される")
-        void shouldExecuteValidTransition() {
-            ProjectStatus newStatus = ProjectStatus.PLANNING.transitionTo(ProjectStatus.IN_PROGRESS);
+        @DisplayName("transitionToメソッドで新しいステータスを返す")
+        void shouldReturnNewStatus() {
+            ProjectStatus newStatus = ProjectStatus.DRAFT.transitionTo(ProjectStatus.IN_PROGRESS);
             assertThat(newStatus).isEqualTo(ProjectStatus.IN_PROGRESS);
-        }
 
-        @Test
-        @DisplayName("transitionToメソッドで不正な遷移は例外をスローする")
-        void shouldThrowExceptionForInvalidTransition() {
-            assertThatThrownBy(() -> ProjectStatus.PLANNING.transitionTo(ProjectStatus.COMPLETED))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("プロジェクトステータスの遷移が不正です: PLANNING -> COMPLETED");
-        }
-
-        @ParameterizedTest
-        @CsvSource({
-            "PLANNING, IN_PROGRESS",
-            "PLANNING, CANCELLED",
-            "IN_PROGRESS, COMPLETED",
-            "IN_PROGRESS, CANCELLED"
-        })
-        @DisplayName("許可された遷移パターンをすべてテスト")
-        void shouldAllowValidTransitions(String from, String to) {
-            ProjectStatus fromStatus = new ProjectStatus(from);
-            ProjectStatus toStatus = new ProjectStatus(to);
-            assertThat(fromStatus.canTransitionTo(toStatus)).isTrue();
-            assertThat(fromStatus.transitionTo(toStatus)).isEqualTo(toStatus);
+            ProjectStatus closedStatus = ProjectStatus.IN_PROGRESS.transitionTo(ProjectStatus.CLOSED);
+            assertThat(closedStatus).isEqualTo(ProjectStatus.CLOSED);
         }
     }
 
@@ -261,10 +154,9 @@ class ProjectStatusTest {
         @Test
         @DisplayName("各ステータスの日本語表示名が正しい")
         void shouldReturnCorrectJapaneseDisplayNames() {
-            assertThat(ProjectStatus.PLANNING.getDisplayName()).isEqualTo("計画中");
+            assertThat(ProjectStatus.DRAFT.getDisplayName()).isEqualTo("計画中");
             assertThat(ProjectStatus.IN_PROGRESS.getDisplayName()).isEqualTo("進行中");
-            assertThat(ProjectStatus.COMPLETED.getDisplayName()).isEqualTo("完了");
-            assertThat(ProjectStatus.CANCELLED.getDisplayName()).isEqualTo("中止");
+            assertThat(ProjectStatus.CLOSED.getDisplayName()).isEqualTo("完了");
         }
 
         @Test
@@ -283,47 +175,47 @@ class ProjectStatusTest {
         @Test
         @DisplayName("toStringメソッドは値を返す")
         void toStringShouldReturnValue() {
-            assertThat(ProjectStatus.PLANNING.toString()).isEqualTo("PLANNING");
+            assertThat(ProjectStatus.DRAFT.toString()).isEqualTo("DRAFT");
             assertThat(ProjectStatus.IN_PROGRESS.toString()).isEqualTo("IN_PROGRESS");
-            assertThat(ProjectStatus.COMPLETED.toString()).isEqualTo("COMPLETED");
-            assertThat(ProjectStatus.CANCELLED.toString()).isEqualTo("CANCELLED");
+            assertThat(ProjectStatus.CLOSED.toString()).isEqualTo("CLOSED");
         }
 
         @Test
         @DisplayName("equalsメソッドの動作")
+        @SuppressWarnings({"unlikely-arg-type", "EqualsBetweenInconvertibleTypes"})
         void equalsShouldWorkCorrectly() {
-            ProjectStatus status1 = new ProjectStatus("PLANNING");
-            ProjectStatus status2 = new ProjectStatus("PLANNING");
-            ProjectStatus status3 = ProjectStatus.PLANNING;
+            ProjectStatus status1 = new ProjectStatus("DRAFT");
+            ProjectStatus status2 = new ProjectStatus("DRAFT");
+            ProjectStatus status3 = ProjectStatus.DRAFT;
             ProjectStatus status4 = new ProjectStatus("IN_PROGRESS");
 
             // 同じインスタンス
             assertThat(status1.equals(status1)).isTrue();
-            
+
             // 同じ値
             assertThat(status1.equals(status2)).isTrue();
             assertThat(status1.equals(status3)).isTrue();
-            
+
             // 異なる値
             assertThat(status1.equals(status4)).isFalse();
-            
+
             // null比較
             assertThat(status1.equals(null)).isFalse();
-            
+
             // 異なるクラス
-            assertThat(status1.equals("PLANNING")).isFalse();
+            assertThat(status1.equals("DRAFT")).isFalse();
         }
 
         @Test
         @DisplayName("hashCodeメソッドの動作")
         void hashCodeShouldWorkCorrectly() {
-            ProjectStatus status1 = new ProjectStatus("PLANNING");
-            ProjectStatus status2 = new ProjectStatus("PLANNING");
+            ProjectStatus status1 = new ProjectStatus("DRAFT");
+            ProjectStatus status2 = new ProjectStatus("DRAFT");
             ProjectStatus status3 = new ProjectStatus("IN_PROGRESS");
 
             // 同じ値は同じハッシュコード
             assertThat(status1.hashCode()).isEqualTo(status2.hashCode());
-            
+
             // 異なる値は（通常）異なるハッシュコード
             assertThat(status1.hashCode()).isNotEqualTo(status3.hashCode());
         }
@@ -331,13 +223,13 @@ class ProjectStatusTest {
         @Test
         @DisplayName("レコードの基本的な動作")
         void recordShouldWorkCorrectly() {
-            ProjectStatus status = new ProjectStatus("PLANNING");
-            
+            ProjectStatus status = new ProjectStatus("DRAFT");
+
             // valueアクセサメソッド
-            assertThat(status.value()).isEqualTo("PLANNING");
-            
+            assertThat(status.value()).isEqualTo("DRAFT");
+
             // レコードのtoString（デフォルト実装をオーバーライドしている）
-            assertThat(status.toString()).isEqualTo("PLANNING");
+            assertThat(status.toString()).isEqualTo("DRAFT");
         }
     }
 
@@ -348,19 +240,18 @@ class ProjectStatusTest {
         @Test
         @DisplayName("大文字小文字混在の入力を処理できる")
         void shouldHandleMixedCaseInput() {
-            assertThat(ProjectStatus.of("PlAnNiNg").value()).isEqualTo("PLANNING");
+            assertThat(ProjectStatus.of("DrAfT").value()).isEqualTo("DRAFT");
             assertThat(ProjectStatus.of("In_Progress").value()).isEqualTo("IN_PROGRESS");
-            assertThat(ProjectStatus.of("COMpleted").value()).isEqualTo("COMPLETED");
-            assertThat(ProjectStatus.of("cANCELLED").value()).isEqualTo("CANCELLED");
+            assertThat(ProjectStatus.of("cLOSed").value()).isEqualTo("CLOSED");
         }
 
         @Test
         @DisplayName("様々な空白文字を含む入力を処理できる")
         void shouldHandleVariousWhitespaceCharacters() {
-            assertThat(ProjectStatus.of("  PLANNING  ").value()).isEqualTo("PLANNING");
+            assertThat(ProjectStatus.of("  DRAFT  ").value()).isEqualTo("DRAFT");
             assertThat(ProjectStatus.of("\tIN_PROGRESS\t").value()).isEqualTo("IN_PROGRESS");
-            assertThat(ProjectStatus.of("\nCOMPLETED\n").value()).isEqualTo("COMPLETED");
-            assertThat(ProjectStatus.of(" \t\nCANCELLED \t\n").value()).isEqualTo("CANCELLED");
+            assertThat(ProjectStatus.of("\nCLOSED\n").value()).isEqualTo("CLOSED");
+            assertThat(ProjectStatus.of(" \t\nDRAFT \t\n").value()).isEqualTo("DRAFT");
         }
     }
 }

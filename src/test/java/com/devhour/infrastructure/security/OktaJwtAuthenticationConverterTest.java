@@ -1,24 +1,24 @@
 package com.devhour.infrastructure.security;
 
-import com.devhour.application.service.OktaUserSyncService;
-import com.devhour.domain.model.entity.User;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import java.time.Instant;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
-
-import java.time.Instant;
-import java.util.*;
-
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import com.devhour.application.service.OktaUserSyncService;
+import com.devhour.domain.model.entity.User;
 
 /**
  * OktaJwtAuthenticationConverterのテストクラス（簡略版）

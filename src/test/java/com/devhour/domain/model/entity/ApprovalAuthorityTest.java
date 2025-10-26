@@ -570,6 +570,7 @@ class ApprovalAuthorityTest {
 
     @Test
     @DisplayName("equals - 異なるクラスとの比較")
+    @SuppressWarnings({"unlikely-arg-type", "EqualsBetweenInconvertibleTypes"})
     void equals_WithDifferentClass_ReturnsFalse() {
         // Arrange
         ApprovalAuthority authority = ApprovalAuthority.create(

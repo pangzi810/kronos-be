@@ -271,6 +271,7 @@ class CategoryNameTest {
 
         @Test
         @DisplayName("異なるクラスのオブジェクトとは等しくない")
+        @SuppressWarnings({"unlikely-arg-type", "EqualsBetweenInconvertibleTypes"})
         void shouldNotBeEqualToDifferentClass() {
             CategoryName categoryName = new CategoryName("開発作業");
             assertThat(categoryName.equals("開発作業")).isFalse();

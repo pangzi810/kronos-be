@@ -3,6 +3,7 @@ package com.devhour.config;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
 import java.util.concurrent.TimeoutException;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.retry.annotation.EnableRetry;
@@ -27,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @Configuration
 @EnableRetry
 @Slf4j
+@ConditionalOnProperty(name = "jira.integration.enabled", havingValue = "true", matchIfMissing = false)
 public class RetryConfiguration {
     
     // REQ-8.1: 最大リトライ回数（タイムアウトとネットワークエラー用）

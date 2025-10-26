@@ -1,19 +1,20 @@
 package com.devhour.infrastructure.typehandler;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import com.devhour.domain.model.valueobject.ProjectStatus;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,83 +37,63 @@ class ProjectStatusTypeHandlerTest {
     }
     
     @Test
-    void testSetNonNullParameter_Planning() throws SQLException {
-        ProjectStatus status = ProjectStatus.PLANNING;
-        
+    void testSetNonNullParameter_Draft() throws SQLException {
+        ProjectStatus status = ProjectStatus.DRAFT;
+
         typeHandler.setNonNullParameter(preparedStatement, 1, status, null);
-        
-        verify(preparedStatement).setString(1, "PLANNING");
+
+        verify(preparedStatement).setString(1, "DRAFT");
     }
-    
+
     @Test
     void testSetNonNullParameter_InProgress() throws SQLException {
         ProjectStatus status = ProjectStatus.IN_PROGRESS;
-        
+
         typeHandler.setNonNullParameter(preparedStatement, 1, status, null);
-        
+
         verify(preparedStatement).setString(1, "IN_PROGRESS");
     }
-    
+
     @Test
-    void testSetNonNullParameter_Completed() throws SQLException {
-        ProjectStatus status = ProjectStatus.COMPLETED;
-        
+    void testSetNonNullParameter_Closed() throws SQLException {
+        ProjectStatus status = ProjectStatus.CLOSED;
+
         typeHandler.setNonNullParameter(preparedStatement, 1, status, null);
-        
-        verify(preparedStatement).setString(1, "COMPLETED");
+
+        verify(preparedStatement).setString(1, "CLOSED");
     }
     
     @Test
-    void testSetNonNullParameter_Cancelled() throws SQLException {
-        ProjectStatus status = ProjectStatus.CANCELLED;
-        
-        typeHandler.setNonNullParameter(preparedStatement, 1, status, null);
-        
-        verify(preparedStatement).setString(1, "CANCELLED");
-    }
-    
-    @Test
-    void testGetNullableResult_ByColumnName_Planning() throws SQLException {
-        when(resultSet.getString("status")).thenReturn("PLANNING");
-        
+    void testGetNullableResult_ByColumnName_Draft() throws SQLException {
+        when(resultSet.getString("status")).thenReturn("DRAFT");
+
         ProjectStatus result = typeHandler.getNullableResult(resultSet, "status");
-        
+
         assertNotNull(result);
-        assertEquals(ProjectStatus.PLANNING, result);
-        assertEquals("PLANNING", result.value());
+        assertEquals(ProjectStatus.DRAFT, result);
+        assertEquals("DRAFT", result.value());
     }
-    
+
     @Test
     void testGetNullableResult_ByColumnName_InProgress() throws SQLException {
         when(resultSet.getString("status")).thenReturn("IN_PROGRESS");
-        
+
         ProjectStatus result = typeHandler.getNullableResult(resultSet, "status");
-        
+
         assertNotNull(result);
         assertEquals(ProjectStatus.IN_PROGRESS, result);
         assertEquals("IN_PROGRESS", result.value());
     }
-    
+
     @Test
-    void testGetNullableResult_ByColumnName_Completed() throws SQLException {
-        when(resultSet.getString("status")).thenReturn("COMPLETED");
-        
+    void testGetNullableResult_ByColumnName_Closed() throws SQLException {
+        when(resultSet.getString("status")).thenReturn("CLOSED");
+
         ProjectStatus result = typeHandler.getNullableResult(resultSet, "status");
-        
+
         assertNotNull(result);
-        assertEquals(ProjectStatus.COMPLETED, result);
-        assertEquals("COMPLETED", result.value());
-    }
-    
-    @Test
-    void testGetNullableResult_ByColumnName_Cancelled() throws SQLException {
-        when(resultSet.getString("status")).thenReturn("CANCELLED");
-        
-        ProjectStatus result = typeHandler.getNullableResult(resultSet, "status");
-        
-        assertNotNull(result);
-        assertEquals(ProjectStatus.CANCELLED, result);
-        assertEquals("CANCELLED", result.value());
+        assertEquals(ProjectStatus.CLOSED, result);
+        assertEquals("CLOSED", result.value());
     }
     
     @Test
@@ -126,31 +107,31 @@ class ProjectStatusTypeHandlerTest {
     
     @Test
     void testGetNullableResult_ByColumnIndex() throws SQLException {
-        when(resultSet.getString(1)).thenReturn("PLANNING");
-        
+        when(resultSet.getString(1)).thenReturn("DRAFT");
+
         ProjectStatus result = typeHandler.getNullableResult(resultSet, 1);
-        
+
         assertNotNull(result);
-        assertEquals(ProjectStatus.PLANNING, result);
+        assertEquals(ProjectStatus.DRAFT, result);
     }
-    
+
     @Test
     void testGetNullableResult_ByColumnIndex_NullValue() throws SQLException {
         when(resultSet.getString(1)).thenReturn(null);
-        
+
         ProjectStatus result = typeHandler.getNullableResult(resultSet, 1);
-        
+
         assertNull(result);
     }
-    
+
     @Test
     void testGetNullableResult_CallableStatement() throws SQLException {
-        when(callableStatement.getString(1)).thenReturn("COMPLETED");
-        
+        when(callableStatement.getString(1)).thenReturn("CLOSED");
+
         ProjectStatus result = typeHandler.getNullableResult(callableStatement, 1);
-        
+
         assertNotNull(result);
-        assertEquals(ProjectStatus.COMPLETED, result);
+        assertEquals(ProjectStatus.CLOSED, result);
     }
     
     @Test
@@ -164,20 +145,20 @@ class ProjectStatusTypeHandlerTest {
     
     @Test
     void testGetNullableResult_LowerCase() throws SQLException {
-        when(resultSet.getString("status")).thenReturn("planning");
-        
+        when(resultSet.getString("status")).thenReturn("draft");
+
         ProjectStatus result = typeHandler.getNullableResult(resultSet, "status");
-        
+
         assertNotNull(result);
-        assertEquals(ProjectStatus.PLANNING, result);
+        assertEquals(ProjectStatus.DRAFT, result);
     }
-    
+
     @Test
     void testGetNullableResult_MixedCase() throws SQLException {
         when(resultSet.getString("status")).thenReturn("In_Progress");
-        
+
         ProjectStatus result = typeHandler.getNullableResult(resultSet, "status");
-        
+
         assertNotNull(result);
         assertEquals(ProjectStatus.IN_PROGRESS, result);
     }

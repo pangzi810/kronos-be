@@ -51,8 +51,6 @@ public class VelocityTemplateProcessor {
         }
         this.objectMapper = objectMapper;
         this.velocityEngine = createVelocityEngine();
-        
-        log.info("VelocityTemplateProcessor initialized with security restrictions");
     }
     
     /**

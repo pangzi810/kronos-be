@@ -66,7 +66,7 @@ CREATE TABLE projects (
   UNIQUE KEY idx_projects_jira_issue_key (jira_issue_key),
   KEY idx_projects_name (name),
   CONSTRAINT chk_projects_actual_end CHECK (((actual_end_date is null) or (actual_end_date >= start_date))),
-  CONSTRAINT chk_projects_status CHECK ((status in ('PLANNING','IN_PROGRESS','COMPLETED','CANCELLED')))
+  CONSTRAINT chk_projects_status CHECK ((status in ('DRAFT','IN_PROGRESS','CLOSED')))
 );
 
 -- JIRA連携関連テーブル

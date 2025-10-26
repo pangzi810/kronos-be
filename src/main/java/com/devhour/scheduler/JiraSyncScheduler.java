@@ -24,11 +24,11 @@ import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
  * - 設定による有効/無効制御
  * 
  * 設定項目:
- * - jira.sync.scheduler.enabled: スケジューラー有効/無効（デフォルト: true）
+ * - jira.integration.enabled: JIRA統合機能有効/無効（デフォルト: false）
  * - jira.sync.scheduler.cron: 実行スケジュール（デフォルト: 0 0 * * * *）
  * - jira.sync.scheduler.lock-at-most-for: 最大ロック時間（デフォルト: PT10M）
  * - jira.sync.scheduler.lock-at-least-for: 最小ロック時間（デフォルト: PT1M）
- * 
+ *
  * アーキテクチャパターン:
  * - Spring Schedulerによる定期実行
  * - ShedLockによる分散ロック
@@ -38,9 +38,9 @@ import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 @Slf4j
 @Component
 @ConditionalOnProperty(
-    value = "jira.sync.scheduler.enabled", 
-    havingValue = "true", 
-    matchIfMissing = true
+    name = "jira.integration.enabled",
+    havingValue = "true",
+    matchIfMissing = false
 )
 public class JiraSyncScheduler {
     

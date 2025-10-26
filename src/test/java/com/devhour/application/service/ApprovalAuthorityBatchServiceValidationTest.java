@@ -1,16 +1,17 @@
 package com.devhour.application.service;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.lenient;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.util.*;
-
+import java.util.Collections;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -20,12 +21,9 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import com.devhour.application.dto.BatchResult;
 import com.devhour.domain.model.entity.ApprovalAuthority;
 import com.devhour.domain.model.entity.Approver;
-import com.devhour.domain.model.valueobject.EmployeeRecord;
-import com.devhour.domain.model.valueobject.Position;
 import com.devhour.domain.repository.ApprovalAuthorityRepository;
 import com.devhour.domain.repository.ApproverRepository;
 import com.devhour.domain.service.OrganizationHierarchyProcessor;

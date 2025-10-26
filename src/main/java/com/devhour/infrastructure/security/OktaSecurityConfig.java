@@ -55,14 +55,11 @@ public class OktaSecurityConfig {
     @Value("${okta.oauth2.client-id}")
     private String clientId;
     
-    private final OktaUserSyncService oktaUserSyncService;
     private final OktaJwtAuthenticationConverter jwtAuthenticationConverter;
     
     public OktaSecurityConfig(OktaUserSyncService oktaUserSyncService) {
-        this.oktaUserSyncService = oktaUserSyncService;
         // Create converter once and reuse
         this.jwtAuthenticationConverter = new OktaJwtAuthenticationConverter(oktaUserSyncService);
-        logger.info("OktaSecurityConfig initialized with converter: {}", jwtAuthenticationConverter);
     }
     
     /**
@@ -79,8 +76,6 @@ public class OktaSecurityConfig {
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        logger.info("=== SecurityFilterChain設定開始 ===");
-        
         http
             // CSRF保護を無効化（OAuth2トークン使用のため）
             .csrf(csrf -> csrf.disable())
@@ -94,17 +89,13 @@ public class OktaSecurityConfig {
             
             // OAuth2 Resource Server設定
             .oauth2ResourceServer(oauth2 -> {
-                logger.info("=== OAuth2 Resource Server設定中 ===");
                 oauth2.jwt(jwt -> {
-                    logger.info("=== JWT設定中 ===");
-                    
                     // Create and configure JwtDecoder
                     JwtDecoder decoder = jwtDecoder();
                     jwt.decoder(decoder);
                     
                     // CRITICAL: Set our custom converter
                     jwt.jwtAuthenticationConverter(jwtAuthenticationConverter);
-                    logger.info("=== カスタムJwtAuthenticationConverterをセット: {} ===", jwtAuthenticationConverter.getClass().getName());
                     
                     // Create custom JwtAuthenticationProvider with our converter
                     org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationProvider customProvider = 
@@ -117,7 +108,6 @@ public class OktaSecurityConfig {
                         return customProvider.authenticate(authentication);
                     });
                     
-                    logger.info("=== JWT configuration completed with custom provider ===");
                 })
                 .authenticationEntryPoint((request, response, ex) -> {
                     logger.warn("JWT authentication failed for request: {} - {}", 
@@ -170,7 +160,6 @@ public class OktaSecurityConfig {
     @Bean
     @Primary
     public OktaJwtAuthenticationConverter customOktaJwtAuthenticationConverter() {
-        logger.info("Returning singleton OktaJwtAuthenticationConverter instance");
         return jwtAuthenticationConverter;
     }
     
@@ -181,7 +170,6 @@ public class OktaSecurityConfig {
      */
     @Bean
     public JwtDecoder jwtDecoder() {
-        logger.info("Setting up JwtDecoder with issuer: {}", issuerUri);
         
         NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri)
                 .jwsAlgorithm(org.springframework.security.oauth2.jose.jws.SignatureAlgorithm.RS256)
@@ -220,17 +208,22 @@ public class OktaSecurityConfig {
         // 開発環境とOktaドメインを許可
         configuration.setAllowedOriginPatterns(Arrays.asList(
             "http://localhost:3000",           // フロントエンド開発サーバー
-            "http://localhost:5173",           // Vite default port
-            "http://localhost:5174",           // Vite alternate port
-            "http://127.0.0.1:5173",           // Vite with IP
-            "http://127.0.0.1:5174",           // Vite alternate with IP
+            "http://localhost:4173",           // Vite preview default port
+            "http://localhost:4174",           // Vite preview alternate port
+            "http://localhost:5173",           // Vite dev default port
+            "http://localhost:5174",           // Vite dev alternate port
+            "http://127.0.0.1:4173",           // Vite preview with IP
+            "http://127.0.0.1:4174",           // Vite preview alternate with IP
+            "http://127.0.0.1:5173",           // Vite dev with IP
+            "http://127.0.0.1:5174",           // Vite dev alternate with IP
             "https://*.okta.com",              // Oktaドメイン
             "https://*.oktapreview.com",       // Okta Previewドメイン
             "https://*.okta-emea.com"          // Okta EMEAドメイン
         ));
         
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "X-Request-ID"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Request-ID"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L); // プリフライトリクエストのキャッシュ時間
         

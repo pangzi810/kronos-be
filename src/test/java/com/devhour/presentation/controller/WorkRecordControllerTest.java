@@ -1,26 +1,20 @@
 package com.devhour.presentation.controller;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,17 +24,15 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
-import com.devhour.presentation.dto.response.WorkHoursSummaryResponse;
-import com.devhour.presentation.dto.response.WorkRecordsResponse;
 import com.devhour.application.service.WorkRecordApplicationService;
 import com.devhour.domain.exception.InvalidParameterException;
-import com.devhour.domain.model.entity.User;
 import com.devhour.domain.model.entity.WorkRecord;
 import com.devhour.domain.model.entity.WorkRecordApproval;
 import com.devhour.domain.model.valueobject.CategoryCode;
 import com.devhour.domain.model.valueobject.CategoryHours;
 import com.devhour.presentation.dto.request.WorkRecordSaveRequest;
+import com.devhour.presentation.dto.response.WorkHoursSummaryResponse;
+import com.devhour.presentation.dto.response.WorkRecordsResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -653,7 +645,6 @@ class WorkRecordControllerTest {
     void getWorkRecordsByDate_AccessControl_OtherUserData() throws Exception {
         // Arrange
         String authenticatedUserId = "developer123";
-        String targetUserId = "developer456"; // 異なるユーザー
         LocalDate date = LocalDate.of(2024, 1, 15);
         
         // サービス層で空のレスポンスを返すように設定（アクセス制限）

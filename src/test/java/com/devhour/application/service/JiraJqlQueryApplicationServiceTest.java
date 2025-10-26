@@ -26,7 +26,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.devhour.domain.model.entity.JiraJqlQuery;
-import com.devhour.domain.model.entity.JiraResponseTemplate;
 import com.devhour.domain.repository.JiraJqlQueryRepository;
 import com.devhour.domain.repository.JiraResponseTemplateRepository;
 import com.devhour.infrastructure.jira.JiraClient;
@@ -89,7 +88,6 @@ class JiraJqlQueryApplicationServiceTest {
         @DisplayName("正常なJQLクエリ作成が成功する")
         void createJqlQuery_WithValidParameters_ShouldSucceed() {
             // Given
-            JiraResponseTemplate mockTemplate = createMockResponseTemplate();
             JiraJqlQuery expectedQuery = JiraJqlQuery.createNew(
                 TEST_QUERY_NAME, TEST_JQL_STRING, TEST_TEMPLATE_ID, TEST_PRIORITY, TEST_USER_ID
             );
@@ -323,7 +321,7 @@ class JiraJqlQueryApplicationServiceTest {
         void validateJql_WithValidQuery_ShouldReturnValidationResult() throws Exception {
             // Given
             JiraIssueSearchResponse mockResponse = createMockSearchResponse(10);
-            when(jiraClient.searchIssues(eq(TEST_JQL_STRING), eq(1), eq(""))).thenReturn(mockResponse);
+            when(jiraClient.searchIssues(eq(TEST_JQL_STRING), eq(1), eq(0))).thenReturn(mockResponse);
             
             // When
             JiraJqlQueryApplicationService.JqlValidationResult result = 
@@ -334,7 +332,7 @@ class JiraJqlQueryApplicationServiceTest {
             assertEquals(10, result.getMatchingProjectCount());
             assertNull(result.getErrorMessage());
             
-            verify(jiraClient).searchIssues(TEST_JQL_STRING, 1, "");
+            verify(jiraClient).searchIssues(TEST_JQL_STRING, 1, 0);
         }
         
         @Test
@@ -343,7 +341,7 @@ class JiraJqlQueryApplicationServiceTest {
             // Given
             String invalidJql = "invalid jql syntax";
             JiraClientException clientException = new JiraClientException("JQL構文エラー");
-            when(jiraClient.searchIssues(eq(invalidJql), eq(1), eq(""))).thenThrow(clientException);
+            when(jiraClient.searchIssues(eq(invalidJql), eq(1), eq(0))).thenThrow(clientException);
             
             // When
             JiraJqlQueryApplicationService.JqlValidationResult result = 
@@ -565,17 +563,6 @@ class JiraJqlQueryApplicationServiceTest {
             LocalDateTime.now(), 
             TEST_USER_ID, 
             null
-        );
-    }
-    
-    private JiraResponseTemplate createMockResponseTemplate() {
-        return JiraResponseTemplate.restore(
-            TEST_TEMPLATE_ID,
-            "テストテンプレート",
-            "テスト用Velocityテンプレート",
-            "テスト説明",
-            LocalDateTime.now(),
-            LocalDateTime.now()
         );
     }
     

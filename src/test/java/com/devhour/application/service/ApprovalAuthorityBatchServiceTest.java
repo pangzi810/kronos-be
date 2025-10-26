@@ -1,15 +1,23 @@
 package com.devhour.application.service;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDateTime;
-import java.util.*;
-
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -19,11 +27,9 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import com.devhour.application.dto.BatchResult;
 import com.devhour.domain.model.entity.ApprovalAuthority;
 import com.devhour.domain.model.entity.Approver;
-import com.devhour.domain.model.valueobject.EmployeeRecord;
 import com.devhour.domain.model.valueobject.Position;
 import com.devhour.domain.repository.ApprovalAuthorityRepository;
 import com.devhour.domain.repository.ApproverRepository;
@@ -207,7 +213,7 @@ class ApprovalAuthorityBatchServiceTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
             
             // Act
-            BatchResult result = batchService.importApprovalAuthoritiesFromFile(csvFile.toString());
+            batchService.importApprovalAuthoritiesFromFile(csvFile.toString());
             
             // Assert
             // 承認権限者は4人（マネージャー、部長、本部長、統括本部長）

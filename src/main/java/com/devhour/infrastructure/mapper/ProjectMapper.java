@@ -134,7 +134,7 @@ public interface ProjectMapper {
         SELECT id, name, description, status, start_date, planned_end_date,
                actual_end_date, created_by, created_at, updated_at, jira_issue_key, custom_fields
         FROM projects
-        WHERE status IN ('PLANNING', 'IN_PROGRESS', 'ON_HOLD') AND deleted_at IS NULL
+        WHERE status IN ('DRAFT', 'IN_PROGRESS') AND deleted_at IS NULL
         ORDER BY start_date ASC
         """)
     @Results({
@@ -196,7 +196,7 @@ public interface ProjectMapper {
         SELECT id, name, description, status, start_date, planned_end_date,
                actual_end_date, created_by, created_at, updated_at, jira_issue_key, custom_fields
         FROM projects
-        WHERE status IN ('IN_PROGRESS', 'ON_HOLD') AND deleted_at IS NULL
+        WHERE status = 'IN_PROGRESS' AND deleted_at IS NULL
         ORDER BY start_date ASC
         """)
     @Results({

@@ -5,14 +5,17 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.devhour.application.dto.BatchResult;
 import com.devhour.application.exception.BatchProcessingException;
 import com.devhour.application.exception.RecordValidationException;
@@ -23,7 +26,6 @@ import com.devhour.domain.model.valueobject.Position;
 import com.devhour.domain.repository.ApprovalAuthorityRepository;
 import com.devhour.domain.repository.ApproverRepository;
 import com.devhour.domain.service.OrganizationHierarchyProcessor;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -422,18 +424,6 @@ public class ApprovalAuthorityBatchService {
         } catch (IllegalArgumentException e) {
             throw new RecordValidationException("不正な役職です: " + position);
         }
-    }
-    
-    /**
-     * 文字列をトリムし、空の場合はnullを返す
-     * 
-     * @param value 入力文字列
-     * @return トリム後の文字列、空の場合はnull
-     */
-    private String trimToNull(String value) {
-        if (value == null) return null;
-        String trimmed = value.trim();
-        return trimmed.isEmpty() ? null : trimmed;
     }
     
     /**

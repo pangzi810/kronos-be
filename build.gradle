@@ -21,6 +21,29 @@ java {
 	}
 }
 
+repositories {
+	mavenCentral()
+}
+
+// Integration Test Source Set
+sourceSets {
+	integrationTest {
+		java {
+			compileClasspath += main.output + test.output
+			runtimeClasspath += main.output + test.output
+			srcDir file('src/integrationTest/java')
+		}
+		resources {
+			srcDir file('src/integrationTest/resources')
+		}
+	}
+}
+
+// 重複ファイルの処理戦略を設定
+tasks.named('processIntegrationTestResources') {
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
 configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
@@ -36,14 +59,15 @@ configurations {
 		exclude group: 'com.okta.commons'
 		exclude group: 'com.okta'
 	}
-}
-
-repositories {
-	mavenCentral()
+	// Integration test configurations
+	integrationTestImplementation.extendsFrom testImplementation
+	integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+	integrationTestCompileOnly.extendsFrom testCompileOnly
+	integrationTestAnnotationProcessor.extendsFrom testAnnotationProcessor
 }
 
 dependencies {
-	testImplementation platform('org.testcontainers:testcontainers-bom:1.19.0')
+	testImplementation platform('org.testcontainers:testcontainers-bom:1.21.3')
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-aop'
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
@@ -93,6 +117,9 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	testCompileOnly 'org.projectlombok:lombok'
 	testAnnotationProcessor 'org.projectlombok:lombok'
+
+	// Spring Boot Configuration Processor (generates metadata for custom properties)
+	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 	
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'com.mysql:mysql-connector-j'
@@ -120,6 +147,36 @@ flyway {
 tasks.named('test') {
 	useJUnitPlatform()
 	finalizedBy jacocoTestReport
+
+	// 統合テストを除外（MapperとRepositoryテストはintegrationTestで実行）
+	exclude '**/infrastructure/mapper/**'
+	exclude '**/infrastructure/repository/**'
+	exclude '**/domain/repository/**'
+	exclude '**/DevelopmentHourManagementApplicationTests.class'
+}
+
+// Integration Test Task
+task integrationTest(type: Test) {
+	description = 'Runs integration tests with Testcontainers (Mapper tests)'
+	group = 'verification'
+
+	testClassesDirs = sourceSets.integrationTest.output.classesDirs
+	classpath = sourceSets.integrationTest.runtimeClasspath
+
+	useJUnitPlatform()
+	shouldRunAfter test
+
+	// Testcontainers configuration for Rancher Desktop
+	systemProperty 'testcontainers.docker.socket.override', '/var/run/docker.sock'
+	environment 'TESTCONTAINERS_RYUK_DISABLED', 'true'
+	environment 'TESTCONTAINERS_CHECKS_DISABLE', 'true'
+	environment 'DOCKER_HOST', 'unix:///Users/toshihiro/.rd/docker.sock'
+
+	// レポート出力先を分離
+	reports {
+		html.outputLocation = file("${buildDir}/reports/tests/integrationTest")
+		junitXml.outputLocation = file("${buildDir}/test-results/integrationTest")
+	}
 }
 
 jacoco {
@@ -128,12 +185,28 @@ jacoco {
 
 jacocoTestReport {
 	dependsOn test
+	// 統合テストは明示的に実行した場合のみカバレッジに含める
+	executionData.setFrom(fileTree(dir: "$buildDir/jacoco", includes: ["**/*.exec"]))
 	reports {
 		xml.required = true
 		html.required = true
 		csv.required = false
 	}
-	executionData fileTree(dir: "$buildDir/jacoco", includes: ["**/*.exec"])
+
+	// ユニットテストと統合テストの両方のカバレッジを集約
+	getSourceDirectories().setFrom(files(sourceSets.main.allSource.srcDirs))
+	getClassDirectories().setFrom(files(sourceSets.main.output))
+}
+
+// 統合テストのカバレッジレポート（オプション）
+task jacocoIntegrationTestReport(type: JacocoReport) {
+	dependsOn integrationTest
+	executionData integrationTest
+	sourceSets sourceSets.main
+	reports {
+		html.required = true
+		xml.required = true
+	}
 }
 
 jacocoTestCoverageVerification {

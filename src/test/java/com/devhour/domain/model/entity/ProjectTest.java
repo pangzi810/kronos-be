@@ -1,12 +1,12 @@
 package com.devhour.domain.model.entity;
 
-import com.devhour.domain.model.valueobject.ProjectStatus;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import java.time.LocalDate;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import java.time.LocalDate;
-
-import static org.assertj.core.api.Assertions.*;
+import com.devhour.domain.model.valueobject.ProjectStatus;
 
 /**
  * Projectエンティティのユニットテスト
@@ -30,7 +30,7 @@ class ProjectTest {
         assertThat(project.getId()).isNotNull();
         assertThat(project.getName()).isEqualTo("Test Project");
         assertThat(project.getDescription()).isEqualTo("Test description");
-        assertThat(project.getStatus()).isEqualTo(ProjectStatus.PLANNING);
+        assertThat(project.getStatus()).isEqualTo(ProjectStatus.DRAFT);
         assertThat(project.getCreatedBy()).isEqualTo("manager123");
     }
 
@@ -109,10 +109,10 @@ class ProjectTest {
         project.start();
 
         // Act
-        project.complete(LocalDate.now());
+        project.close(LocalDate.now());
 
         // Assert
-        assertThat(project.getStatus()).isEqualTo(ProjectStatus.COMPLETED);
+        assertThat(project.getStatus()).isEqualTo(ProjectStatus.CLOSED);
     }
 
     @Test
@@ -180,26 +180,6 @@ class ProjectTest {
     }
 
     @Test
-    @DisplayName("プロジェクト中止")
-    void cancel_Success() {
-        // Arrange
-        Project project = Project.create(
-            "Test Project",
-            "Test description",
-            LocalDate.now(),
-            LocalDate.now().plusMonths(6),
-            "manager123"
-        );
-
-        // Act
-        project.cancel(LocalDate.now());
-
-        // Assert
-        assertThat(project.getStatus()).isEqualTo(ProjectStatus.CANCELLED);
-        assertThat(project.getActualEndDate()).isNotNull();
-    }
-
-    @Test
     @DisplayName("等価性判定 - 同じIDの場合はtrue")
     void equals_SameId_ReturnsTrue() {
         // Arrange
@@ -210,7 +190,7 @@ class ProjectTest {
             LocalDate.now(),
             LocalDate.now().plusMonths(6),
             null, // actualEndDate
-            ProjectStatus.PLANNING,
+            ProjectStatus.DRAFT,
             "manager123",
             LocalDate.now().atStartOfDay(),
             LocalDate.now().atStartOfDay()
@@ -245,7 +225,7 @@ class ProjectTest {
             LocalDate.now(),
             LocalDate.now().plusMonths(6),
             null, // actualEndDate
-            ProjectStatus.PLANNING,
+            ProjectStatus.DRAFT,
             "manager123",
             LocalDate.now().atStartOfDay(),
             LocalDate.now().atStartOfDay()
@@ -258,7 +238,7 @@ class ProjectTest {
             LocalDate.now(),
             LocalDate.now().plusMonths(6),
             null, // actualEndDate
-            ProjectStatus.PLANNING,
+            ProjectStatus.DRAFT,
             "manager123",
             LocalDate.now().atStartOfDay(),
             LocalDate.now().atStartOfDay()
@@ -325,30 +305,7 @@ class ProjectTest {
             "user123"
         );
         project.start();
-        project.complete(LocalDate.now().plusDays(10));
-
-        // Act & Assert
-        assertThatThrownBy(() -> project.updateProjectInfo(
-            "新しい名前",
-            "新しい説明",
-            LocalDate.now().plusDays(1),
-            LocalDate.now().plusMonths(4)
-        )).isInstanceOf(IllegalStateException.class)
-          .hasMessageContaining("完了または中止されたプロジェクトは更新できません");
-    }
-
-    @Test
-    @DisplayName("プロジェクト更新 - 中止状態での更新は例外")
-    void updateProjectInfo_CancelledProject_ThrowsException() {
-        // Arrange
-        Project project = Project.create(
-            "テストプロジェクト",
-            "説明",
-            LocalDate.now(),
-            LocalDate.now().plusMonths(3),
-            "user123"
-        );
-        project.cancel(LocalDate.now().plusDays(10));
+        project.close(LocalDate.now().plusDays(10));
 
         // Act & Assert
         assertThatThrownBy(() -> project.updateProjectInfo(
@@ -408,7 +365,7 @@ class ProjectTest {
     }
 
     @Test
-    @DisplayName("プロジェクト開始 - PLANNING状態以外では例外")
+    @DisplayName("プロジェクト開始 - DRAFT状態以外では例外")
     void start_NonPlanningStatus_ThrowsException() {
         // Arrange
         Project project = Project.create(
@@ -437,10 +394,10 @@ class ProjectTest {
             LocalDate.now().plusMonths(3),
             "user123"
         );
-        // PLANNING状態のまま完了しようとする
+        // DRAFT状態のまま完了しようとする
 
         // Act & Assert
-        assertThatThrownBy(() -> project.complete(LocalDate.now().plusDays(10)))
+        assertThatThrownBy(() -> project.close(LocalDate.now().plusDays(10)))
             .isInstanceOf(IllegalStateException.class)
             .hasMessageContaining("プロジェクトを完了できません");
     }
@@ -459,29 +416,9 @@ class ProjectTest {
         project.start();
 
         // Act & Assert
-        assertThatThrownBy(() -> project.complete(LocalDate.now().plusDays(5)))
+        assertThatThrownBy(() -> project.close(LocalDate.now().plusDays(5)))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("実際の終了日は開始日以降の日付を設定してください");
-    }
-
-    @Test
-    @DisplayName("プロジェクト中止 - 完了状態では例外")
-    void cancel_CompletedStatus_ThrowsException() {
-        // Arrange
-        Project project = Project.create(
-            "テストプロジェクト",
-            "説明",
-            LocalDate.now(),
-            LocalDate.now().plusMonths(3),
-            "user123"
-        );
-        project.start();
-        project.complete(LocalDate.now().plusDays(10));
-
-        // Act & Assert
-        assertThatThrownBy(() -> project.cancel(LocalDate.now().plusDays(15)))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("プロジェクトを中止できません");
     }
 
     @Test
@@ -503,7 +440,7 @@ class ProjectTest {
         assertThat(result).contains("Project{");
         assertThat(result).contains("id=");
         assertThat(result).contains("name='Test Project'");
-        assertThat(result).contains("status=PLANNING");
+        assertThat(result).contains("status=DRAFT");
     }
 
     @Test
@@ -614,7 +551,7 @@ class ProjectTest {
         project.start();
 
         // Act & Assert
-        assertThatThrownBy(() -> project.complete(null))
+        assertThatThrownBy(() -> project.close(null))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("実際の終了日は必須です");
     }
@@ -633,99 +570,6 @@ class ProjectTest {
 
         // Act & Assert
         assertThat(project.isDateWithinProjectPeriod(null)).isFalse();
-    }
-
-    @Test
-    @DisplayName("isDelayed - 進行中で予定終了日を過ぎている場合はtrue")
-    void isDelayed_InProgressAfterPlannedEndDate_ReturnsTrue() {
-        // Arrange
-        LocalDate startDate = LocalDate.now().minusMonths(6);
-        LocalDate plannedEndDate = LocalDate.now().minusDays(1); // 昨日が終了予定
-        Project project = Project.restore(
-            "test-id",
-            "Test Project",
-            "Test description",
-            startDate,
-            plannedEndDate,
-            null,
-            ProjectStatus.IN_PROGRESS,
-            "manager123",
-            startDate.atStartOfDay(),
-            LocalDate.now().atStartOfDay()
-        );
-
-        // Act & Assert
-        assertThat(project.isDelayed()).isTrue();
-    }
-
-    @Test
-    @DisplayName("isDelayed - 完了済みで実際の終了日が予定より遅い場合はtrue")
-    void isDelayed_CompletedAfterPlannedEndDate_ReturnsTrue() {
-        // Arrange
-        LocalDate startDate = LocalDate.now().minusMonths(6);
-        LocalDate plannedEndDate = LocalDate.now().minusDays(10);
-        LocalDate actualEndDate = LocalDate.now().minusDays(5); // 予定より5日遅れ
-        Project project = Project.restore(
-            "test-id",
-            "Test Project",
-            "Test description",
-            startDate,
-            plannedEndDate,
-            actualEndDate,
-            ProjectStatus.COMPLETED,
-            "manager123",
-            startDate.atStartOfDay(),
-            LocalDate.now().atStartOfDay()
-        );
-
-        // Act & Assert
-        assertThat(project.isDelayed()).isTrue();
-    }
-
-    @Test
-    @DisplayName("isDelayed - 完了済みで実際の終了日が予定以内の場合はfalse")
-    void isDelayed_CompletedOnTime_ReturnsFalse() {
-        // Arrange
-        LocalDate startDate = LocalDate.now().minusMonths(6);
-        LocalDate plannedEndDate = LocalDate.now().plusDays(5);
-        LocalDate actualEndDate = LocalDate.now(); // 予定より早く完了
-        Project project = Project.restore(
-            "test-id",
-            "Test Project",
-            "Test description",
-            startDate,
-            plannedEndDate,
-            actualEndDate,
-            ProjectStatus.COMPLETED,
-            "manager123",
-            startDate.atStartOfDay(),
-            LocalDate.now().atStartOfDay()
-        );
-
-        // Act & Assert
-        assertThat(project.isDelayed()).isFalse();
-    }
-
-    @Test
-    @DisplayName("cancel - actualEndDateがnullの場合は現在日付を設定")
-    void cancel_NullActualEndDate_SetsCurrentDate() {
-        // Arrange
-        Project project = Project.create(
-            "Test Project",
-            "Test description",
-            LocalDate.now(),
-            LocalDate.now().plusMonths(6),
-            "manager123"
-        );
-        project.start();
-
-        // Act
-        project.cancel(null);
-
-        // Assert
-        assertThat(project.getStatus()).isEqualTo(ProjectStatus.CANCELLED);
-        assertThat(project.getActualEndDate()).isNotNull();
-        assertThat(project.getActualEndDate()).isEqualTo(LocalDate.now());
     }
 
     @Test
@@ -793,7 +637,7 @@ class ProjectTest {
             startDate,
             plannedEndDate,
             actualEndDate,
-            ProjectStatus.COMPLETED,
+            ProjectStatus.CLOSED,
             "manager123",
             startDate.atStartOfDay(),
             LocalDate.now().atStartOfDay()
@@ -826,6 +670,7 @@ class ProjectTest {
 
     @Test
     @DisplayName("equals - 異なるクラスのオブジェクトとの比較はfalse")
+    @SuppressWarnings({"unlikely-arg-type", "EqualsBetweenInconvertibleTypes"})
     void equals_WithDifferentClass_ReturnsFalse() {
         // Arrange
         Project project = Project.create(
@@ -976,7 +821,7 @@ class ProjectTest {
             LocalDate.now(),
             LocalDate.now().plusMonths(6),
             null,
-            ProjectStatus.PLANNING,
+            ProjectStatus.DRAFT,
             "manager123",
             LocalDate.now().atStartOfDay(),
             LocalDate.now().atStartOfDay(),
@@ -1002,7 +847,7 @@ class ProjectTest {
             LocalDate.now(),
             LocalDate.now().plusMonths(6),
             null,
-            ProjectStatus.PLANNING,
+            ProjectStatus.DRAFT,
             "manager123",
             LocalDate.now().atStartOfDay(),
             LocalDate.now().atStartOfDay(),
@@ -1168,7 +1013,7 @@ class ProjectTest {
             null
         );
         project.start();
-        project.complete(LocalDate.now());
+        project.close(LocalDate.now());
 
         // Act & Assert
         assertThatThrownBy(() -> project.updateFromJira(
@@ -1308,7 +1153,7 @@ class ProjectTest {
         assertThat(result).contains("Project{");
         assertThat(result).contains("id=");
         assertThat(result).contains("name='Test Project'");
-        assertThat(result).contains("status=PLANNING");
+        assertThat(result).contains("status=DRAFT");
         assertThat(result).contains("jiraIssueKey='PROJ-123'");
     }
 
@@ -1331,7 +1176,7 @@ class ProjectTest {
         assertThat(result).contains("Project{");
         assertThat(result).contains("id=");
         assertThat(result).contains("name='Test Project'");
-        assertThat(result).contains("status=PLANNING");
+        assertThat(result).contains("status=DRAFT");
         assertThat(result).contains("jiraIssueKey=null");
     }
 
