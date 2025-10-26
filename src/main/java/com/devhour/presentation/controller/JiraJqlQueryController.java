@@ -2,6 +2,7 @@ package com.devhour.presentation.controller;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -53,6 +54,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/jira/queries")
 @Validated
 @Slf4j
+@ConditionalOnProperty(name = "jira.integration.enabled", havingValue = "true", matchIfMissing = false)
 public class JiraJqlQueryController {
     
     private final JiraJqlQueryApplicationService jqlQueryApplicationService;

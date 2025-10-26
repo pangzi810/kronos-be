@@ -1,6 +1,7 @@
 package com.devhour.presentation.controller;
 
 import java.time.LocalDate;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -59,6 +60,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/jira")
 @Validated
 @Slf4j
+@ConditionalOnProperty(name = "jira.integration.enabled", havingValue = "true", matchIfMissing = false)
 public class JiraSyncController {
     
     private final JiraSyncApplicationService jiraSyncApplicationService;

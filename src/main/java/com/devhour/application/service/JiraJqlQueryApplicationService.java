@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.devhour.domain.model.entity.JiraJqlQuery;
@@ -37,6 +38,7 @@ import com.devhour.infrastructure.jira.dto.JiraIssueSearchResponse;
  */
 @Service
 @Transactional
+@ConditionalOnProperty(name = "jira.integration.enabled", havingValue = "true", matchIfMissing = false)
 public class JiraJqlQueryApplicationService {
     
     private static final Logger logger = LoggerFactory.getLogger(JiraJqlQueryApplicationService.class);

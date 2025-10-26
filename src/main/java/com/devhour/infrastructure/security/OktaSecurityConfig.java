@@ -60,7 +60,6 @@ public class OktaSecurityConfig {
     public OktaSecurityConfig(OktaUserSyncService oktaUserSyncService) {
         // Create converter once and reuse
         this.jwtAuthenticationConverter = new OktaJwtAuthenticationConverter(oktaUserSyncService);
-        logger.info("OktaSecurityConfig initialized with converter: {}", jwtAuthenticationConverter);
     }
     
     /**
@@ -77,8 +76,6 @@ public class OktaSecurityConfig {
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        logger.info("=== SecurityFilterChain設定開始 ===");
-        
         http
             // CSRF保護を無効化（OAuth2トークン使用のため）
             .csrf(csrf -> csrf.disable())
@@ -92,17 +89,13 @@ public class OktaSecurityConfig {
             
             // OAuth2 Resource Server設定
             .oauth2ResourceServer(oauth2 -> {
-                logger.info("=== OAuth2 Resource Server設定中 ===");
                 oauth2.jwt(jwt -> {
-                    logger.info("=== JWT設定中 ===");
-                    
                     // Create and configure JwtDecoder
                     JwtDecoder decoder = jwtDecoder();
                     jwt.decoder(decoder);
                     
                     // CRITICAL: Set our custom converter
                     jwt.jwtAuthenticationConverter(jwtAuthenticationConverter);
-                    logger.info("=== カスタムJwtAuthenticationConverterをセット: {} ===", jwtAuthenticationConverter.getClass().getName());
                     
                     // Create custom JwtAuthenticationProvider with our converter
                     org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationProvider customProvider = 
@@ -115,7 +108,6 @@ public class OktaSecurityConfig {
                         return customProvider.authenticate(authentication);
                     });
                     
-                    logger.info("=== JWT configuration completed with custom provider ===");
                 })
                 .authenticationEntryPoint((request, response, ex) -> {
                     logger.warn("JWT authentication failed for request: {} - {}", 
@@ -168,7 +160,6 @@ public class OktaSecurityConfig {
     @Bean
     @Primary
     public OktaJwtAuthenticationConverter customOktaJwtAuthenticationConverter() {
-        logger.info("Returning singleton OktaJwtAuthenticationConverter instance");
         return jwtAuthenticationConverter;
     }
     
@@ -179,7 +170,6 @@ public class OktaSecurityConfig {
      */
     @Bean
     public JwtDecoder jwtDecoder() {
-        logger.info("Setting up JwtDecoder with issuer: {}", issuerUri);
         
         NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri)
                 .jwsAlgorithm(org.springframework.security.oauth2.jose.jws.SignatureAlgorithm.RS256)
