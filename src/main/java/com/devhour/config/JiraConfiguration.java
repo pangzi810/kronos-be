@@ -20,12 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 @ConfigurationProperties("jira")
 @Slf4j
 public class JiraConfiguration {
-
-    /**
-     * JIRA統合機能の有効/無効を制御するマスタースイッチ
-     */
-    private IntegrationConfig integration = new IntegrationConfig();
-
+    
     /**
      * JIRA サーバーのベースURL
      * 例: "https://company.atlassian.net"
@@ -56,19 +51,7 @@ public class JiraConfiguration {
      */
     @Valid
     private AuthConfig auth = new AuthConfig();
-
-    /**
-     * JIRA統合機能設定の内部クラス
-     */
-    @Data
-    public static class IntegrationConfig {
-        /**
-         * JIRA統合機能の有効/無効
-         * デフォルト: false (無効)
-         */
-        private boolean enabled = false;
-    }
-
+    
     /**
      * タイムアウト設定の内部クラス
      */
