@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -51,7 +50,6 @@ public class ProjectController {
      * @return 作成されたプロジェクト情報
      */
     @PostMapping
-    @PreAuthorize("hasAuthority('SCOPE_projects:write')")
     public ResponseEntity<Project> createProject(@Valid @RequestBody ProjectCreateRequest request) {
         Project project = projectApplicationService.createProject(
                 SecurityUtils.requireCurrentUserId(), 
@@ -72,7 +70,6 @@ public class ProjectController {
      * @return 更新されたプロジェクト情報
      */
     @PutMapping("/{projectId}")
-    @PreAuthorize("hasAuthority('SCOPE_projects:write')")
     public ResponseEntity<Project> updateProject(@PathVariable String projectId,
             @Valid @RequestBody ProjectUpdateRequest request) {
         Project project = projectApplicationService.updateProject(
@@ -93,7 +90,6 @@ public class ProjectController {
      * @return プロジェクト詳細情報
      */
     @GetMapping("/{projectId}")
-    @PreAuthorize("hasAuthority('SCOPE_projects:read')")
     public ResponseEntity<Project> getProject(@PathVariable String projectId) {
         Optional<Project> project = projectApplicationService.findById(projectId);
 
@@ -106,7 +102,6 @@ public class ProjectController {
      * @return 全プロジェクト一覧
      */
     @GetMapping
-    @PreAuthorize("hasAuthority('SCOPE_projects:read')")
     public ResponseEntity<List<Project>> getAllProjects() {
         List<Project> projects = projectApplicationService.findAllProjects();
 
@@ -119,7 +114,6 @@ public class ProjectController {
      * @return 全プロジェクト一覧
      */
     @GetMapping("/search")
-    @PreAuthorize("hasAuthority('SCOPE_projects:read')")
     public ResponseEntity<List<Project>> searchProjects(
         @Valid @RequestParam("q") String query
     ) {
@@ -137,7 +131,6 @@ public class ProjectController {
      * @return ユーザーがアサインされている工数記録可能なプロジェクト一覧
      */
     @GetMapping("/workrecordable")
-    @PreAuthorize("hasAuthority('SCOPE_projects:read')")
     public ResponseEntity<List<Project>> getWorkRecordableProjectForUsers() {
         List<Project> projects = projectApplicationService
                 .findWorkRecordableProjectsForUser(SecurityUtils.requireCurrentUserId());
@@ -153,7 +146,6 @@ public class ProjectController {
      * @return 工数記録可能なプロジェクト一覧
      */
     @GetMapping("/active")
-    @PreAuthorize("hasAuthority('SCOPE_projects:read')")
     public ResponseEntity<List<Project>> getAllWorkRecordableProjects() {
         List<Project> projects = projectApplicationService.findWorkRecordableProjects();
 
@@ -168,7 +160,6 @@ public class ProjectController {
      * @return 工数記録したプロジェクト一覧
      */
     @GetMapping("/recent-recorded")
-    @PreAuthorize("hasAuthority('SCOPE_projects:read')")
     public ResponseEntity<List<Project>> getRecentRecordedProjects() {
         List<Project> projects = projectApplicationService.findRecentWorkRecordedProjects();
 
@@ -183,7 +174,6 @@ public class ProjectController {
      * @return 削除結果
      */
     @DeleteMapping("/{projectId}")
-    @PreAuthorize("hasAuthority('SCOPE_projects:write')")
     public ResponseEntity<Void> deleteProject(@PathVariable String projectId) {
         projectApplicationService.deleteProject(projectId,
                 SecurityUtils.requireCurrentUserId());

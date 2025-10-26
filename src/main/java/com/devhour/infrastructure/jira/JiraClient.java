@@ -197,7 +197,7 @@ public class JiraClient {
         
         // UriComponentsBuilderを使用して適切なURLエンコーディングを行う（エンコードなし）
         String url = UriComponentsBuilder
-            .fromUriString(jiraConfiguration.getFullApiUrl("/rest/api/3/search/jql"))
+            .fromUriString(jiraConfiguration.getFullApiUrl("/rest/api/2/search"))
             .queryParam("jql", jqlQuery)
             .queryParam("maxResults", maxResults != null ? maxResults : 50)
             .queryParam("startAt", startAt != null ? startAt : 0)
