@@ -645,7 +645,6 @@ class WorkRecordControllerTest {
     void getWorkRecordsByDate_AccessControl_OtherUserData() throws Exception {
         // Arrange
         String authenticatedUserId = "developer123";
-        String targetUserId = "developer456"; // 異なるユーザー
         LocalDate date = LocalDate.of(2024, 1, 15);
         
         // サービス層で空のレスポンスを返すように設定（アクセス制限）

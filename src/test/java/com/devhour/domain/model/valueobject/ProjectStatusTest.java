@@ -182,6 +182,7 @@ class ProjectStatusTest {
 
         @Test
         @DisplayName("equalsメソッドの動作")
+        @SuppressWarnings({"unlikely-arg-type", "EqualsBetweenInconvertibleTypes"})
         void equalsShouldWorkCorrectly() {
             ProjectStatus status1 = new ProjectStatus("DRAFT");
             ProjectStatus status2 = new ProjectStatus("DRAFT");

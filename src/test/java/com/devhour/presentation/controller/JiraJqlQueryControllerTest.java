@@ -32,7 +32,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.devhour.application.service.JiraJqlQueryApplicationService;
 import com.devhour.application.service.JiraJqlQueryApplicationService.JqlValidationResult;
 import com.devhour.domain.model.entity.JiraJqlQuery;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * JqlQueryControllerのテストクラス
@@ -64,11 +63,6 @@ public class JiraJqlQueryControllerTest {
     
     @MockitoBean
     private JiraJqlQueryApplicationService jqlQueryApplicationService;
-    
-    
-    
-    @Autowired
-    private ObjectMapper objectMapper;
     
     private JiraJqlQuery sampleQuery;
     private LocalDateTime fixedDateTime;

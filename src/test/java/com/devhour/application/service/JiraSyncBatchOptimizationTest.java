@@ -341,15 +341,6 @@ class JiraSyncBatchOptimizationTest {
         
         return issues;
     }
-    
-    private JiraIssueSearchResponse createJiraSearchResponse(List<JsonNode> issues) {
-        JiraIssueSearchResponse response = new JiraIssueSearchResponse();
-        response.setStartAt(0);
-        response.setTotal(issues.size());
-        response.setMaxResults(issues.size());
-        response.setIssues(issues);
-        return response;
-    }
 
     private JiraIssueSearchResponse createPaginatedResponse(List<JsonNode> issues, int startAt, int maxResults, int total) {
         JiraIssueSearchResponse response = new JiraIssueSearchResponse();

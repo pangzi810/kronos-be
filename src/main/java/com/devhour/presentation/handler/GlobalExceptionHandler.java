@@ -12,7 +12,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.jwt.JwtException;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -26,8 +25,6 @@ import com.devhour.domain.exception.InvalidParameterException;
 import com.devhour.domain.exception.UnauthorizedException;
 import com.devhour.domain.exception.UserProvisioningException;
 import com.devhour.presentation.dto.response.ErrorResponse;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * グローバル例外ハンドラー
@@ -45,7 +42,6 @@ import jakarta.servlet.http.HttpServletRequest;
 public class GlobalExceptionHandler {
     
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
-    private final ObjectMapper objectMapper = new ObjectMapper();
     
     /**
      * 承認処理例外のハンドリング
@@ -478,43 +474,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity
             .status(httpStatus)
             .body(errorResponse);
-    }
-    
-    
-    /**
-     * WebRequestからクライアントIPアドレスを取得
-     * 
-     * @param request WebRequest
-     * @return クライアントIPアドレス
-     */
-    private String getClientIpAddress(WebRequest request) {
-        String xForwardedFor = request.getHeader("X-Forwarded-For");
-        
-        if (StringUtils.hasText(xForwardedFor)) {
-            // 複数のIPがカンマ区切りで含まれている場合、最初のIPを使用
-            String firstIp = xForwardedFor.split(",")[0].trim();
-            if (StringUtils.hasText(firstIp)) {
-                return firstIp;
-            }
-        }
-        
-        String xRealIp = request.getHeader("X-Real-IP");
-        if (StringUtils.hasText(xRealIp)) {
-            return xRealIp;
-        }
-        
-        // WebRequestからはRemoteAddrを直接取得できないため、
-        // HttpServletRequestにキャストして取得を試行
-        try {
-            if (request instanceof org.springframework.web.context.request.ServletWebRequest) {
-                HttpServletRequest httpRequest = ((org.springframework.web.context.request.ServletWebRequest) request).getRequest();
-                return httpRequest.getRemoteAddr();
-            }
-        } catch (Exception e) {
-            log.debug("Failed to extract remote address from WebRequest", e);
-        }
-        
-        return "unknown";
     }
     
     /**

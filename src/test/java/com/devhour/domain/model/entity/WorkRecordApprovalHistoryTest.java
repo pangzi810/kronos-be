@@ -216,6 +216,7 @@ class WorkRecordApprovalHistoryTest {
     
     @Test
     @DisplayName("equals - IDベースの等価性判定")
+    @SuppressWarnings({"unlikely-arg-type", "EqualsBetweenInconvertibleTypes"})
     void testEquals() {
         // Arrange
         WorkRecordApprovalHistory history1 = createTestApprovalHistory("APPROVE");

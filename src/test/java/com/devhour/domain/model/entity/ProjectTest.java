@@ -670,6 +670,7 @@ class ProjectTest {
 
     @Test
     @DisplayName("equals - 異なるクラスのオブジェクトとの比較はfalse")
+    @SuppressWarnings({"unlikely-arg-type", "EqualsBetweenInconvertibleTypes"})
     void equals_WithDifferentClass_ReturnsFalse() {
         // Arrange
         Project project = Project.create(

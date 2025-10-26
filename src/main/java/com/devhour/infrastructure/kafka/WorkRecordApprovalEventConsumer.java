@@ -24,12 +24,10 @@ public class WorkRecordApprovalEventConsumer {
     private static final Logger logger = LoggerFactory.getLogger(WorkRecordApprovalEventConsumer.class);
     
     private final WorkRecordApprovalHistoryRepository approvalHistoryRepository;
-    private final ObjectMapper objectMapper;
     
     public WorkRecordApprovalEventConsumer(WorkRecordApprovalHistoryRepository approvalHistoryRepository,
                                   ObjectMapper objectMapper) {
         this.approvalHistoryRepository = approvalHistoryRepository;
-        this.objectMapper = objectMapper;
     }
     
     /**
