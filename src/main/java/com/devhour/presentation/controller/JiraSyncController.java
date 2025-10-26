@@ -5,7 +5,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -85,7 +84,6 @@ public class JiraSyncController {
      * @return JIRA接続設定レスポンス
      */
     @GetMapping("/connection")
-    @PreAuthorize("hasAuthority('SCOPE_jira:read')")
     public ResponseEntity<JiraConnectionResponse> getConnection() {
         JiraConnectionResponse response = JiraConnectionResponse.of(
             jiraConfiguration.getBaseUrl(),
@@ -106,7 +104,6 @@ public class JiraSyncController {
      * @return 接続テスト結果レスポンス
      */
     @PostMapping("/connection/test")
-    @PreAuthorize("hasAuthority('SCOPE_jira:write')")
     public ResponseEntity<ConnectionTestResponse> testConnection() {
         try {
             boolean connectionSuccess = jiraSyncApplicationService.testConnection();
@@ -144,7 +141,6 @@ public class JiraSyncController {
      * @return 手動同期実行結果レスポンス
      */
     @PostMapping("/sync/manual")
-    @PreAuthorize("hasAuthority('SCOPE_jira:write')")
     public ResponseEntity<JiraSyncResponse> executeManualSync() {
         try {
             JiraSyncHistory syncHistory = jiraSyncApplicationService.executeSync();
@@ -174,7 +170,6 @@ public class JiraSyncController {
      * @return 同期ステータスレスポンス
      */
     @GetMapping("/sync/status")
-    @PreAuthorize("hasAuthority('SCOPE_jira:read')")
     public ResponseEntity<JiraSyncStatusResponse> getSyncStatus() {
         // 最近の同期ステータスを取得
         JiraSyncHistoryResponse recentSyncStatus = syncHistoryApplicationService.getRecentSyncStatus();
@@ -198,7 +193,6 @@ public class JiraSyncController {
      * @return ページネーション情報付き同期履歴レスポンス
      */
     @GetMapping("/sync/history")
-    @PreAuthorize("hasAuthority('SCOPE_jira:read')")
     public ResponseEntity<JiraSyncHistoryResponse> getSyncHistory(
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "20") Integer size,
@@ -230,7 +224,6 @@ public class JiraSyncController {
      * @return 同期履歴詳細レスポンス
      */
     @GetMapping("/sync/history/{id}")
-    @PreAuthorize("hasAuthority('SCOPE_jira:read')")
     public ResponseEntity<JiraSyncHistoryDetailResponse> getSyncHistoryDetails(@PathVariable String id) {
         // UUIDフォーマット検証
         try {

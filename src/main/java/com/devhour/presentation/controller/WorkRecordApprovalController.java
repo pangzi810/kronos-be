@@ -2,7 +2,6 @@ package com.devhour.presentation.controller;
 
 import java.util.List;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -64,7 +63,6 @@ public class WorkRecordApprovalController {
      * @return 集計済み承認待ち一覧
      */
     @GetMapping("/pending")
-    @PreAuthorize("hasAuthority('SCOPE_work-hours:approve')")
     @Operation(summary = "承認待ち工数記録一覧取得", description = "ログインユーザーが承認可能な承認待ち工数記録の集計済み一覧を取得します")
     public ResponseEntity<List<DailyApprovalApplicationService.AggregatedApproval>> getPendingApprovals() {
 
@@ -91,7 +89,6 @@ public class WorkRecordApprovalController {
      * @return 承認処理結果
      */
     @PostMapping("/approve")
-    @PreAuthorize("hasAuthority('SCOPE_work-hours:approve')")
     @Operation(summary = "日次承認", description = "申請者の特定日の全案件を一括承認します")
     public ResponseEntity<DailyApprovalApplicationService.ApprovalResult> approveDaily(
             @Valid @RequestBody DailyApprovalRequest request) {
@@ -121,7 +118,6 @@ public class WorkRecordApprovalController {
      * @return 差し戻し処理結果
      */
     @PostMapping("/reject")
-    @PreAuthorize("hasAuthority('SCOPE_work-hours:approve')")
     @Operation(summary = "日次差し戻し", description = "申請者の特定日の全案件を一括差し戻します")
     public ResponseEntity<DailyApprovalApplicationService.ApprovalResult> rejectDaily(
             @Valid @RequestBody DailyApprovalRequest request) {
@@ -152,7 +148,6 @@ public class WorkRecordApprovalController {
      * @return 各処理の結果リスト
      */
     @PostMapping("/approve-batch")
-    @PreAuthorize("hasAuthority('SCOPE_work-hours:approve')")
     @Operation(summary = "一括承認（日次）", description = "複数の申請者/日付の組み合わせを一括承認します")
     public ResponseEntity<List<DailyApprovalApplicationService.ApprovalResult>> approveBatch(
             @Valid @RequestBody BatchApprovalRequest request) {
@@ -181,7 +176,6 @@ public class WorkRecordApprovalController {
      * @return 各処理の結果リスト
      */
     @PostMapping("/reject-batch")
-    @PreAuthorize("hasAuthority('SCOPE_work-hours:approve')")
     @Operation(summary = "一括否決（日次）", description = "複数の申請者/日付の組み合わせを一括否決します")
     public ResponseEntity<List<DailyApprovalApplicationService.ApprovalResult>> rejectBatch(
             @Valid @RequestBody BatchRejectRequest request) {

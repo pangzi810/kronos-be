@@ -256,10 +256,6 @@ public class Project {
      * @throws IllegalStateException 更新不可能な状態の場合
      */
     public void updateProjectInfo(String name, String description, LocalDate startDate, LocalDate plannedEndDate) {
-        if (status.isClosed()) {
-            throw new IllegalStateException("完了または中止されたプロジェクトは更新できません");
-        }
-
         validateUpdateParameters(name, startDate, plannedEndDate);
 
         this.name = name.trim();
@@ -428,10 +424,6 @@ public class Project {
                               LocalDate plannedEndDate, ProjectStatus status, String customFields) {
         if (!hasJiraIntegration()) {
             throw new IllegalStateException("JIRA統合されていないプロジェクトは、JIRAからの情報更新はできません");
-        }
-
-        if (this.status.isClosed()) {
-            throw new IllegalStateException("完了または中止されたプロジェクトは、JIRAからの情報更新はできません");
         }
 
         validateUpdateParameters(name, startDate, plannedEndDate);

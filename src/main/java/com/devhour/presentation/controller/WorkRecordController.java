@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -58,7 +57,6 @@ public class WorkRecordController {
      * @return 作成または更新された工数記録情報
      */
     @PutMapping("/me/{date}")
-    @PreAuthorize("hasAuthority('SCOPE_work-hours:write')")
     public ResponseEntity<WorkRecordsResponse> saveWorkRecord(@Valid @PathVariable LocalDate date,
             @Valid @RequestBody WorkRecordSaveRequest request) {
 
@@ -78,7 +76,6 @@ public class WorkRecordController {
      * @return 工数記録と承認ステータスを含むレスポンス
      */
     @GetMapping("/me/{date}")
-    @PreAuthorize("hasAuthority('SCOPE_work-hours:read')")
     public ResponseEntity<WorkRecordsResponse> getWorkRecordsByDate(
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
 
@@ -98,7 +95,6 @@ public class WorkRecordController {
      * @return 指定期間の工数記録一覧
      */
     @GetMapping("/me/period")
-    @PreAuthorize("hasAuthority('SCOPE_work-hours:read')")
     public ResponseEntity<List<WorkRecord>> getWorkRecordsByPeriod(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
@@ -121,7 +117,6 @@ public class WorkRecordController {
      * @return 工数集計レポート
      */
     @GetMapping("/me/summary")
-    @PreAuthorize("hasAuthority('SCOPE_work-hours:read')")
     public ResponseEntity<WorkHoursSummaryResponse> getWorkHoursSummary(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
@@ -142,7 +137,6 @@ public class WorkRecordController {
      * @return 未入力日のリスト
      */
     @GetMapping("/me/missing-dates")
-    @PreAuthorize("hasAuthority('SCOPE_work-hours:read')")
     public ResponseEntity<MissingDatesResponse> getMissingDates(
             @RequestParam @Min(2000) @Max(3000) Integer year,
             @RequestParam @Min(1) @Max(12) Integer month) {
@@ -163,7 +157,6 @@ public class WorkRecordController {
      * @return 日付毎のステータス情報（工数記録の有無、承認状況、総工数）
      */
     @GetMapping("/me/date-statuses")
-    @PreAuthorize("hasAuthority('SCOPE_work-hours:read')")
     public ResponseEntity<DateStatusResponse> getDateStatuses(
             @RequestParam @Min(2000) @Max(3000) Integer year,
             @RequestParam @Min(1) @Max(12) Integer month) {

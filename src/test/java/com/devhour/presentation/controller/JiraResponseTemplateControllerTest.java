@@ -24,6 +24,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import com.devhour.application.service.JsonTransformService;
@@ -55,6 +56,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @WebMvcTest(JiraResponseTemplateController.class)
 @AutoConfigureMockMvc(addFilters = false)
 @Import(com.devhour.config.TestSecurityConfiguration.class)
+@ActiveProfiles("test")
 @DisplayName("ResponseTemplateController テスト")
 public class JiraResponseTemplateControllerTest {
     

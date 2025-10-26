@@ -29,6 +29,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.retry.RecoveryCallback;
 import org.springframework.retry.RetryCallback;
 import org.springframework.retry.support.RetryTemplate;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.ResourceAccessException;
 import com.devhour.application.service.JsonTransformService.JsonTransformException;
 import com.devhour.domain.exception.JiraAuthenticationException;
@@ -148,6 +149,14 @@ class JiraSyncApplicationServiceTest {
         
         // テスト用共通フォーマットJSON
         testCommonFormatJson = "{ \"projectKey\": \"TEST-123\", \"projectName\": \"Test Project\" }";
+
+        // @Valueアノテーションで注入されるべきプロパティ値を手動設定
+        ReflectionTestUtils.setField(service, "batchSize", 100);
+        ReflectionTestUtils.setField(service, "memoryEfficientProcessing", true);
+        ReflectionTestUtils.setField(service, "progressLoggingEnabled", true);
+        ReflectionTestUtils.setField(service, "progressLoggingInterval", 10);
+        ReflectionTestUtils.setField(service, "streamingChunkSize", 50);
+        ReflectionTestUtils.setField(service, "performanceMonitoringEnabled", true);
     }
     
     @Test

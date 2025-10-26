@@ -274,20 +274,27 @@ public class JsonTransformService {
      */
     private String mergeJsonFields(String commonFieldJsonString, String customFieldJsonString) {
         try {
-            // JSONパースしてマップに変換
-            java.util.Map<String, Object> commonFields = objectMapper.readValue(
-                commonFieldJsonString,
-                objectMapper.getTypeFactory().constructMapType(java.util.Map.class, String.class, Object.class)
+            // Velocityテンプレート処理結果にエスケープされていない制御文字が含まれる可能性があるため、
+            // 制御文字を許可するObjectMapperを使用
+            com.fasterxml.jackson.databind.ObjectMapper lenientMapper = objectMapper.copy();
+            lenientMapper.enable(
+                com.fasterxml.jackson.core.json.JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature()
             );
 
-            java.util.Map<String, Object> customFields = objectMapper.readValue(
+            // JSONパースしてマップに変換
+            java.util.Map<String, Object> commonFields = lenientMapper.readValue(
+                commonFieldJsonString,
+                lenientMapper.getTypeFactory().constructMapType(java.util.Map.class, String.class, Object.class)
+            );
+
+            java.util.Map<String, Object> customFields = lenientMapper.readValue(
                 customFieldJsonString,
-                objectMapper.getTypeFactory().constructMapType(java.util.Map.class, String.class, Object.class)
+                lenientMapper.getTypeFactory().constructMapType(java.util.Map.class, String.class, Object.class)
             );
 
             commonFields.put("customFields", customFields);
 
-            // JSON文字列に変換して返す
+            // JSON文字列に変換して返す（制御文字は自動的にエスケープされる）
             return objectMapper.writeValueAsString(commonFields);
 
         } catch (Exception e) {
