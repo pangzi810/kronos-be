@@ -54,7 +54,6 @@ import lombok.extern.slf4j.Slf4j;
  * - Spring Retryによる回復力のある外部API通信
  */
 @Service
-@Transactional
 @Slf4j
 @ConditionalOnProperty(name = "jira.integration.enabled", havingValue = "true", matchIfMissing = false)
 public class JiraSyncApplicationService {
@@ -249,12 +248,7 @@ public class JiraSyncApplicationService {
                     .orElseThrow(() -> new IllegalStateException("レスポンステンプレートが見つかりません: " + query.getTemplateId()));
                 
                 // バッチ処理最適化: メモリ効率的な処理
-                if (memoryEfficientProcessing && totalIssues > batchSize) {
-                    processBatchedIssues(response.getIssues(), template, syncHistory, query);
-                } else {
-                    // 少量データは従来通り一括処理
-                    processIssuesTraditional(response.getIssues(), template, syncHistory);
-                }
+                processBatchedIssues(response.getIssues(), template, syncHistory, query);
                 
                 // パフォーマンス監視ログ
                 if (performanceMonitoringEnabled) {
@@ -493,6 +487,7 @@ public class JiraSyncApplicationService {
      * @param syncHistory 同期履歴
      * @return バッチ処理結果の同期履歴詳細リスト
      */
+    @Transactional
     private void processIssueBatch(List<JsonNode> batch, JiraResponseTemplate template, 
                                                      JiraSyncHistory syncHistory) {
         for (JsonNode issue : batch) {
@@ -501,30 +496,6 @@ public class JiraSyncApplicationService {
             } catch (Exception e) {
                 String issueKey = issue.has("key") ? issue.get("key").asText() : "unknown";
                 log.error("バッチ内イシュー処理エラー: issueKey={} - {}", issueKey, e.getMessage(), e);
-                syncHistory.addDetail("Sync Error", DetailStatus.ERROR, String.format("バッチ処理エラー [%s]: %s", issueKey, e.getMessage()));
-            }
-        }
-    }
-    
-    /**
-     * 従来の一括イシュー処理
-     * 
-     * 少量データに対して従来通りの処理を実行する。
-     * バッチ処理のオーバーヘッドを避けるための最適化。
-     * 
-     * @param issues 処理対象のJIRAイシューリスト
-     * @param template レスポンステンプレート
-     * @param syncHistory 同期履歴
-     * @return 処理結果の同期履歴詳細リスト
-     */
-    private void processIssuesTraditional(List<JsonNode> issues, JiraResponseTemplate template, 
-                                                           JiraSyncHistory syncHistory) {
-        for (JsonNode issue : issues) {
-            try {
-                processJiraIssue(issue, template, syncHistory);
-            } catch (Exception e) {
-                String issueKey = issue.has("key") ? issue.get("key").asText() : "unknown";
-                log.error("JIRAイシュー処理中にエラーが発生: issueKey={} - {}", issueKey, e.getMessage(), e);
                 syncHistory.addDetail("Sync Error", DetailStatus.ERROR, String.format("バッチ処理エラー [%s]: %s", issueKey, e.getMessage()));
             }
         }
