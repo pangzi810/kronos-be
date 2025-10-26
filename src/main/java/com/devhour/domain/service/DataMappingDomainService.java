@@ -311,7 +311,7 @@ public class DataMappingDomainService {
      */
     private ProjectStatus mapProjectStatus(String statusString) {
         if (statusString == null || statusString.trim().isEmpty()) {
-            return statusMappingConfig.getDefaultProjectStatus();
+            return statusMappingConfig.getDefaultStatus();
         }
         
         String normalizedStatus = statusString.trim().toUpperCase();
@@ -321,8 +321,8 @@ public class DataMappingDomainService {
             return mappedStatus;    
         }
         
-        log.warn("Unknown project status '{}', defaulting to {}", statusString, statusMappingConfig.getDefaultProjectStatus());
-        return statusMappingConfig.getDefaultProjectStatus();
+        log.warn("Unknown project status '{}', defaulting to {}", statusString, statusMappingConfig.getDefaultStatus());
+        return statusMappingConfig.getDefaultStatus();
     }
     
     /**

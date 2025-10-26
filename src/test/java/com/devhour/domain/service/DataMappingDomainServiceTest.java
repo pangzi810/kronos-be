@@ -67,7 +67,7 @@ class DataMappingDomainServiceTest {
         defaultMappingMap.put("BACKLOG", ProjectStatus.DRAFT);
 
         lenient().when(statusMappingConfig.buildStatusMappingMap()).thenReturn(defaultMappingMap);
-        lenient().when(statusMappingConfig.getDefaultProjectStatus()).thenReturn(ProjectStatus.DRAFT);
+        lenient().when(statusMappingConfig.getDefaultStatus()).thenReturn(ProjectStatus.DRAFT);
         
         domainService = new DataMappingDomainService(objectMapper, statusMappingConfig);
     }
