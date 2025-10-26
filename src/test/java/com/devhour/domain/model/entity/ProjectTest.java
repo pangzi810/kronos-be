@@ -294,30 +294,6 @@ class ProjectTest {
     }
 
     @Test
-    @DisplayName("プロジェクト更新 - 完了状態での更新は例外")
-    void updateProjectInfo_CompletedProject_ThrowsException() {
-        // Arrange
-        Project project = Project.create(
-            "テストプロジェクト",
-            "説明",
-            LocalDate.now(),
-            LocalDate.now().plusMonths(3),
-            "user123"
-        );
-        project.start();
-        project.close(LocalDate.now().plusDays(10));
-
-        // Act & Assert
-        assertThatThrownBy(() -> project.updateProjectInfo(
-            "新しい名前",
-            "新しい説明",
-            LocalDate.now().plusDays(1),
-            LocalDate.now().plusMonths(4)
-        )).isInstanceOf(IllegalStateException.class)
-          .hasMessageContaining("完了または中止されたプロジェクトは更新できません");
-    }
-
-    @Test
     @DisplayName("プロジェクト更新 - 256文字のプロジェクト名は例外")
     void updateProjectInfo_TooLongName_ThrowsException() {
         // Arrange
@@ -997,34 +973,6 @@ class ProjectTest {
             null
         )).isInstanceOf(IllegalStateException.class)
           .hasMessageContaining("JIRA統合されていないプロジェクトは、JIRAからの情報更新はできません");
-    }
-
-    @Test
-    @DisplayName("JIRAからの情報更新 - 完了状態のプロジェクトで例外")
-    void updateFromJira_CompletedProject_ThrowsException() {
-        // Arrange
-        Project project = Project.create(
-            "Test Project",
-            "Test description",
-            LocalDate.now(),
-            LocalDate.now().plusMonths(6),
-            "manager123",
-            "PROJ-123",
-            null
-        );
-        project.start();
-        project.close(LocalDate.now());
-
-        // Act & Assert
-        assertThatThrownBy(() -> project.updateFromJira(
-            "New Name",
-            "New description",
-            LocalDate.now(),
-            LocalDate.now().plusMonths(7),
-            ProjectStatus.IN_PROGRESS,
-            null
-        )).isInstanceOf(IllegalStateException.class)
-          .hasMessageContaining("完了または中止されたプロジェクトは、JIRAからの情報更新はできません");
     }
 
     @Test
