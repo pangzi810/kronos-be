@@ -52,8 +52,11 @@ public class OktaSecurityConfig {
     @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}")
     private String jwkSetUri;
     
-    @Value("${okta.oauth2.client-id}")
+    @Value("${spring.security.oauth2.resourceserver.jwt.client-id}")
     private String clientId;
+
+    @Value("${spring.security.oauth2.resourceserver.jwt.audience}")
+    private String audience;
     
     private final OktaJwtAuthenticationConverter jwtAuthenticationConverter;
     
@@ -182,7 +185,7 @@ public class OktaSecurityConfig {
             public org.springframework.security.oauth2.core.OAuth2TokenValidatorResult validate(Jwt jwt) {
                 // Okta typically includes the client ID in the 'aud' claim for access tokens
                 if (jwt.getAudience() != null && 
-                    (jwt.getAudience().contains(clientId) || jwt.getAudience().contains("api://kronos"))) {
+                    (jwt.getAudience().contains(clientId) || jwt.getAudience().contains(audience))) {
                     return org.springframework.security.oauth2.core.OAuth2TokenValidatorResult.success();
                 }
                 return org.springframework.security.oauth2.core.OAuth2TokenValidatorResult.failure(

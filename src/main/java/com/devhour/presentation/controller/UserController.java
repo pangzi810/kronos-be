@@ -3,7 +3,6 @@ package com.devhour.presentation.controller;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -44,7 +43,6 @@ public class UserController {
      * @return ユーザー詳細情報
      */
     @GetMapping("/{userId}")
-    @PreAuthorize("hasAuthority('SCOPE_users:read')")
     public ResponseEntity<User> getUser(@PathVariable String userId) {
         Optional<User> user = userApplicationService.findById(userId);
 
@@ -59,7 +57,6 @@ public class UserController {
      * @return アクティブな開発者一覧レスポンス
      */
     @GetMapping("/active/developers")
-    @PreAuthorize("hasAuthority('SCOPE_users:read')")
     public ResponseEntity<List<User>> getActiveDevelopers() {
         List<User> developers = userApplicationService.findActiveDevelopers();
 
@@ -78,7 +75,6 @@ public class UserController {
      * @return ユーザー一覧とページネーション情報
      */
     @GetMapping
-    @PreAuthorize("hasAuthority('SCOPE_users:read')")
     public ResponseEntity<?> getUsersWithPagination(@RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "20") Integer size,
             @RequestParam(defaultValue = "createdAt") String sortBy,

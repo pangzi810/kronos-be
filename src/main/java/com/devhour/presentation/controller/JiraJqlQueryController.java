@@ -5,7 +5,6 @@ import java.util.Optional;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -75,7 +74,6 @@ public class JiraJqlQueryController {
      * @return JQLクエリ一覧レスポンス
      */
     @GetMapping
-    @PreAuthorize("hasAuthority('SCOPE_jira:read')")
     public ResponseEntity<List<JiraJqlQuery>> listQueries(
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "20") Integer size,
@@ -110,7 +108,6 @@ public class JiraJqlQueryController {
      * @return 作成されたJQLクエリエンティティ
      */
     @PostMapping
-    @PreAuthorize("hasAuthority('SCOPE_jira:write')")
     public ResponseEntity<JiraJqlQuery> createQuery(
             @Valid @RequestBody JiraJqlQueryRequest request
             ) {
@@ -137,7 +134,6 @@ public class JiraJqlQueryController {
      * @return 更新されたJQLクエリエンティティ
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('SCOPE_jira:write')")
     public ResponseEntity<JiraJqlQuery> updateQuery(
             @PathVariable String id,
             @Valid @RequestBody JiraJqlQueryRequest request
@@ -177,7 +173,6 @@ public class JiraJqlQueryController {
      * @return 削除完了レスポンス
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('SCOPE_jira:write')")
     public ResponseEntity<Void> deleteQuery(
             @PathVariable String id
             ) {
@@ -201,7 +196,6 @@ public class JiraJqlQueryController {
      * @return JQL検証結果
      */
     @PostMapping("/{id}/validate")
-    @PreAuthorize("hasAuthority('SCOPE_jira:write')")
     public ResponseEntity<ValidationResult> validateQuery(
             @PathVariable String id
             ) {
