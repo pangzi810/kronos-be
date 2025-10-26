@@ -49,11 +49,11 @@ public class JiraProjectStatusMappingConfiguration {
     /**
      * デフォルトステータスをProjectStatus値オブジェクトとして取得
      */
-    public ProjectStatus getDefaultStatus() {
+    public ProjectStatus getDefaultProjectStatus() {
         if (defaultStatus == null || defaultStatus.trim().isEmpty()) {
             return ProjectStatus.DRAFT;
         }
-        
+
         try {
             return ProjectStatus.of(defaultStatus.trim().toUpperCase());
         } catch (IllegalArgumentException e) {

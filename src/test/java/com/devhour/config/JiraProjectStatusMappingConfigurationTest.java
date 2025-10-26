@@ -149,7 +149,7 @@ class JiraProjectStatusMappingConfigurationTest {
         config.setDefaultStatus("IN_PROGRESS");
 
         // Act
-        ProjectStatus result = config.getDefaultStatus();
+        ProjectStatus result = config.getDefaultProjectStatus();
 
         // Assert
         assertEquals(ProjectStatus.IN_PROGRESS, result);
@@ -161,7 +161,7 @@ class JiraProjectStatusMappingConfigurationTest {
         config.setDefaultStatus("INVALID_STATUS");
 
         // Act
-        ProjectStatus result = config.getDefaultStatus();
+        ProjectStatus result = config.getDefaultProjectStatus();
 
         // Assert
         assertEquals(ProjectStatus.DRAFT, result);
@@ -173,7 +173,7 @@ class JiraProjectStatusMappingConfigurationTest {
         config.setDefaultStatus(null);
 
         // Act
-        ProjectStatus result = config.getDefaultStatus();
+        ProjectStatus result = config.getDefaultProjectStatus();
 
         // Assert
         assertEquals(ProjectStatus.DRAFT, result);
@@ -185,7 +185,7 @@ class JiraProjectStatusMappingConfigurationTest {
         config.setDefaultStatus("");
 
         // Act
-        ProjectStatus result = config.getDefaultStatus();
+        ProjectStatus result = config.getDefaultProjectStatus();
 
         // Assert
         assertEquals(ProjectStatus.DRAFT, result);
@@ -197,7 +197,7 @@ class JiraProjectStatusMappingConfigurationTest {
         config.setDefaultStatus("   ");
 
         // Act
-        ProjectStatus result = config.getDefaultStatus();
+        ProjectStatus result = config.getDefaultProjectStatus();
 
         // Assert
         assertEquals(ProjectStatus.DRAFT, result);
@@ -209,7 +209,7 @@ class JiraProjectStatusMappingConfigurationTest {
         config.setDefaultStatus("closed");
 
         // Act
-        ProjectStatus result = config.getDefaultStatus();
+        ProjectStatus result = config.getDefaultProjectStatus();
 
         // Assert
         assertEquals(ProjectStatus.CLOSED, result);

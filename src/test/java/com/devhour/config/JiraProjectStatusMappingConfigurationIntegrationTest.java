@@ -50,7 +50,7 @@ class JiraProjectStatusMappingConfigurationIntegrationTest {
     @Test
     void getDefaultStatus_integrationWithApplicationProperties_success() {
         // Act
-        ProjectStatus defaultStatus = config.getDefaultStatus();
+        ProjectStatus defaultStatus = config.getDefaultProjectStatus();
 
         // Assert
         assertNotNull(defaultStatus);
