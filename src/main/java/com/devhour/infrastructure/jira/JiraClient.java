@@ -1,7 +1,5 @@
 package com.devhour.infrastructure.jira;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -23,12 +21,14 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * JIRA REST API通信クライアント
- * 
+ *
  * JIRA API v2/v3との通信を担当し、認証、エラーハンドリング、
  * リトライ機能を提供する。
+ *
+ * jira.integration.enabled=true の場合のみ有効化される
  */
 @Component
-@ConditionalOnProperty(value = "jira.base-url")
+@ConditionalOnProperty(name = "jira.integration.enabled", havingValue = "true", matchIfMissing = false)
 @ConditionalOnClass(name = "org.apache.hc.client5.http.impl.classic.HttpClientBuilder")
 @Slf4j
 public class JiraClient {
@@ -66,7 +66,7 @@ public class JiraClient {
                 jqlQuery, maxResults, startAt);
         
         if (!jiraConfiguration.isConfigured()) {
-            throw new JiraClientException("JIRA認証情報が設定されていません。JIRA統合機能を利用できません。");
+            throw new JiraClientException("JIRA APIトークンが設定されていません。JIRA統合機能を利用できません。");
         }
         validateSearchParameters(jqlQuery, maxResults, startAt);
         
@@ -109,7 +109,7 @@ public class JiraClient {
         }
         
         if (!jiraConfiguration.isConfigured()) {
-            throw new JiraClientException("JIRA認証情報が設定されていません。JIRA統合機能を利用できません。");
+            throw new JiraClientException("JIRA APIトークンが設定されていません。JIRA統合機能を利用できません。");
         }
         
         try {
@@ -144,7 +144,7 @@ public class JiraClient {
         
         try {
             if (!jiraConfiguration.isConfigured()) {
-            throw new JiraClientException("JIRA認証情報が設定されていません。JIRA統合機能を利用できません。");
+            throw new JiraClientException("JIRA APIトークンが設定されていません。JIRA統合機能を利用できません。");
         }
             
             String url = buildServerInfoUrl();
@@ -165,24 +165,22 @@ public class JiraClient {
     }
     
     /**
-     * Basic認証用のHTTPヘッダーを作成
-     * 
+     * Bearer Token認証用のHTTPヘッダーを作成
+     *
      * @return 認証ヘッダーを含むHttpHeaders
      */
     private HttpHeaders createAuthHeaders() {
-        String username = jiraConfiguration.getAuthUsername();
-        String token = jiraConfiguration.getAuthToken();
-        
-        String auth = username + ":" + token;
-        byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes(StandardCharsets.UTF_8));
-        String authHeader = "Basic " + new String(encodedAuth);
-        
+        String token = jiraConfiguration.getAuth().getToken();
+
+        // Bearer token authentication (for JIRA Cloud API Token)
+        String authHeader = "Bearer " + token;
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(java.util.Arrays.asList(MediaType.APPLICATION_JSON));
         headers.set("Authorization", authHeader);
         headers.set("User-Agent", "Java Application/1.0");
-        
+
         return headers;
     }
     
@@ -256,10 +254,8 @@ public class JiraClient {
      */
     private void validateConfiguration() {
         if (!jiraConfiguration.isConfigured()) {
-            log.warn("JIRA認証情報が設定されていません。JIRA統合機能は利用できません。");
-            log.info("JIRA統合機能を有効にするには、環境変数 {} および {} を設定してください。",
-                    jiraConfiguration.getAuth().getUsernameEnvKey(),
-                    jiraConfiguration.getAuth().getTokenEnvKey());
+            log.warn("JIRA APIトークンが設定されていません。JIRA統合機能は利用できません。");
+            log.info("JIRA統合機能を有効にするには、環境変数 JIRA_API_TOKEN を設定してください。");
         }
     }
     

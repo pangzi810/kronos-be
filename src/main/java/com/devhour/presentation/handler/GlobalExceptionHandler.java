@@ -26,7 +26,6 @@ import com.devhour.domain.exception.InvalidParameterException;
 import com.devhour.domain.exception.UnauthorizedException;
 import com.devhour.domain.exception.UserProvisioningException;
 import com.devhour.presentation.dto.response.ErrorResponse;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 

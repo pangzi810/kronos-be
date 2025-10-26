@@ -1,17 +1,15 @@
 package com.devhour.config;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.util.ReflectionTestUtils;
-
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
-
-import java.util.Set;
-
-import static org.assertj.core.api.Assertions.*;
 
 /**
  * JiraConfiguration設定クラスのテストクラス
@@ -38,8 +36,8 @@ class JiraConfigurationTest {
         assertThat(jiraConfiguration.getTimeout().getRead()).isEqualTo(60000);
         assertThat(jiraConfiguration.getRetry().getMaxAttempts()).isEqualTo(3);
         assertThat(jiraConfiguration.getRetry().getBackoffMultiplier()).isEqualTo(2.0);
-        assertThat(jiraConfiguration.getAuth().getUsernameEnvKey()).isEqualTo("JIRA_USERNAME");
-        assertThat(jiraConfiguration.getAuth().getTokenEnvKey()).isEqualTo("JIRA_API_TOKEN");
+        // Auth properties are now directly populated from environment variables via Spring Boot
+        // No longer testing env key names as they are removed
     }
 
     @Test
@@ -61,10 +59,12 @@ class JiraConfigurationTest {
     void baseUrlが空文字列の場合バリデーションエラーとなること() {
         // given
         jiraConfiguration.setBaseUrl("");
-        
+        // Set valid auth to isolate baseUrl validation
+        jiraConfiguration.getAuth().setToken("valid-token");
+
         // when
         Set<ConstraintViolation<JiraConfiguration>> violations = validator.validate(jiraConfiguration);
-        
+
         // then
         assertThat(violations).hasSize(1);
         assertThat(violations.iterator().next().getMessage()).contains("JIRA Base URLは必須です");
@@ -74,10 +74,12 @@ class JiraConfigurationTest {
     void baseUrlがnullの場合バリデーションエラーとなること() {
         // given
         jiraConfiguration.setBaseUrl(null);
-        
+        // Set valid auth to isolate baseUrl validation
+        jiraConfiguration.getAuth().setToken("valid-token");
+
         // when
         Set<ConstraintViolation<JiraConfiguration>> violations = validator.validate(jiraConfiguration);
-        
+
         // then
         assertThat(violations).hasSize(1);
         assertThat(violations.iterator().next().getMessage()).contains("JIRA Base URLは必須です");
@@ -204,31 +206,16 @@ class JiraConfigurationTest {
     }
 
     @Test
-    void AuthConfig_環境変数キーが空文字列の場合バリデーションエラーとなること() {
-        // given
+    void AuthConfig_tokenがあればバリデーション成功すること() {
+        // given - only token is required
         JiraConfiguration.AuthConfig authConfig = new JiraConfiguration.AuthConfig();
-        authConfig.setUsernameEnvKey("");
-        
-        // when
-        Set<ConstraintViolation<JiraConfiguration.AuthConfig>> violations = validator.validate(authConfig);
-        
-        // then
-        assertThat(violations).hasSize(1);
-        assertThat(violations.iterator().next().getMessage()).contains("ユーザー名環境変数キーは必須です");
-    }
+        authConfig.setToken("valid-token");
 
-    @Test
-    void AuthConfig_環境変数キーがnullの場合バリデーションエラーとなること() {
-        // given
-        JiraConfiguration.AuthConfig authConfig = new JiraConfiguration.AuthConfig();
-        authConfig.setUsernameEnvKey(null);
-        
         // when
         Set<ConstraintViolation<JiraConfiguration.AuthConfig>> violations = validator.validate(authConfig);
-        
+
         // then
-        assertThat(violations).hasSize(1);
-        assertThat(violations.iterator().next().getMessage()).contains("ユーザー名環境変数キーは必須です");
+        assertThat(violations).isEmpty();
     }
 
     @Test

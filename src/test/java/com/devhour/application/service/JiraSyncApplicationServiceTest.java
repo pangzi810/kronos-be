@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import org.mockito.ArgumentMatchers;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.doReturn;
@@ -158,8 +159,9 @@ class JiraSyncApplicationServiceTest {
         when(syncHistoryRepository.save(any(JiraSyncHistory.class))).thenReturn(testSyncHistory);
 
         // Mock retry template to execute the callback and return JIRA response
-        when(jiraSyncRetryTemplate.execute(any(RetryCallback.class), any(RecoveryCallback.class)))
-            .thenReturn(testJiraResponse);
+        doReturn(testJiraResponse).when(jiraSyncRetryTemplate)
+            .execute(ArgumentMatchers.<RetryCallback<JiraIssueSearchResponse, RuntimeException>>any(),
+                    ArgumentMatchers.<RecoveryCallback<JiraIssueSearchResponse>>any());
 
         when(responseTemplateRepository.findById(testTemplate.getId())).thenReturn(Optional.of(testTemplate));
         doReturn("{\"key\":\"TEST-123\",\"summary\":\"Test Issue\"}").when(objectMapper).writeValueAsString(any());
@@ -175,7 +177,9 @@ class JiraSyncApplicationServiceTest {
         assertNotNull(result);
         verify(jqlQueryRepository).findActiveQueriesOrderByPriority();
         verify(syncHistoryRepository, times(2)).save(any(JiraSyncHistory.class));
-        verify(jiraSyncRetryTemplate).execute(any(RetryCallback.class), any(RecoveryCallback.class));
+        verify(jiraSyncRetryTemplate).execute(
+            ArgumentMatchers.<RetryCallback<JiraIssueSearchResponse, RuntimeException>>any(),
+            ArgumentMatchers.<RecoveryCallback<JiraIssueSearchResponse>>any());
         verify(responseTemplateRepository).findById(eq(testTemplate.getId()));
         verify(objectMapper, times(1)).writeValueAsString(any()); // One call per issue
         verify(jsonTransformService).transformResponse(anyString(), eq(testTemplate.getTemplateName()));
@@ -209,10 +213,12 @@ class JiraSyncApplicationServiceTest {
         List<JiraJqlQuery> activeQueries = Arrays.asList(testJqlQuery);
         when(jqlQueryRepository.findActiveQueriesOrderByPriority()).thenReturn(activeQueries);
         when(syncHistoryRepository.save(any(JiraSyncHistory.class))).thenReturn(testSyncHistory);
-        
+
         // Mock retry template to throw JiraSyncException (which wraps JiraClientException)
-        when(jiraSyncRetryTemplate.execute(any(RetryCallback.class), any(RecoveryCallback.class)))
-            .thenThrow(new JiraSyncException("JQLクエリ実行エラー: JIRA connection failed", 
+        when(jiraSyncRetryTemplate.<JiraIssueSearchResponse, RuntimeException>execute(
+            ArgumentMatchers.<RetryCallback<JiraIssueSearchResponse, RuntimeException>>any(),
+            ArgumentMatchers.<RecoveryCallback<JiraIssueSearchResponse>>any()))
+            .thenThrow(new JiraSyncException("JQLクエリ実行エラー: JIRA connection failed",
                 new JiraClient.JiraClientException("JIRA connection failed")));
         
         // Act
@@ -223,7 +229,9 @@ class JiraSyncApplicationServiceTest {
         assertEquals(JiraSyncStatus.FAILED, result.getSyncStatus());
         verify(jqlQueryRepository).findActiveQueriesOrderByPriority();
         verify(syncHistoryRepository, times(2)).save(any(JiraSyncHistory.class));
-        verify(jiraSyncRetryTemplate).execute(any(RetryCallback.class), any(RecoveryCallback.class));
+        verify(jiraSyncRetryTemplate).execute(
+            ArgumentMatchers.<RetryCallback<JiraIssueSearchResponse, RuntimeException>>any(),
+            ArgumentMatchers.<RecoveryCallback<JiraIssueSearchResponse>>any());
         verifyNoInteractions(jsonTransformService);
     }
     
@@ -236,7 +244,7 @@ class JiraSyncApplicationServiceTest {
         when(syncHistoryRepository.save(any(JiraSyncHistory.class))).thenReturn(testSyncHistory);
         
         // Mock retry template to execute and return JIRA response
-        when(jiraSyncRetryTemplate.execute(any(RetryCallback.class), any(RecoveryCallback.class))).thenReturn(testJiraResponse);
+        when(jiraSyncRetryTemplate.<JiraIssueSearchResponse, RuntimeException>execute(ArgumentMatchers.<RetryCallback<JiraIssueSearchResponse, RuntimeException>>any(), ArgumentMatchers.<RecoveryCallback<JiraIssueSearchResponse>>any())).thenReturn(testJiraResponse);
         when(responseTemplateRepository.findById(testTemplate.getId())).thenReturn(Optional.empty());
         
         // Act
@@ -245,7 +253,7 @@ class JiraSyncApplicationServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(JiraSyncStatus.FAILED, result.getSyncStatus());
-        verify(jiraSyncRetryTemplate).execute(any(RetryCallback.class), any(RecoveryCallback.class));
+        verify(jiraSyncRetryTemplate).execute(ArgumentMatchers.<RetryCallback<JiraIssueSearchResponse, RuntimeException>>any(), ArgumentMatchers.<RecoveryCallback<JiraIssueSearchResponse>>any());
         verify(responseTemplateRepository).findById(testJqlQuery.getTemplateId());
         verifyNoInteractions(jsonTransformService);
     }
@@ -257,7 +265,7 @@ class JiraSyncApplicationServiceTest {
         List<JiraJqlQuery> activeQueries = Arrays.asList(testJqlQuery);
         when(jqlQueryRepository.findActiveQueriesOrderByPriority()).thenReturn(activeQueries);
         when(syncHistoryRepository.save(any(JiraSyncHistory.class))).thenReturn(testSyncHistory);
-        when(jiraSyncRetryTemplate.execute(any(RetryCallback.class), any(RecoveryCallback.class))).thenReturn(testJiraResponse);
+        when(jiraSyncRetryTemplate.<JiraIssueSearchResponse, RuntimeException>execute(ArgumentMatchers.<RetryCallback<JiraIssueSearchResponse, RuntimeException>>any(), ArgumentMatchers.<RecoveryCallback<JiraIssueSearchResponse>>any())).thenReturn(testJiraResponse);
         when(responseTemplateRepository.findById(testTemplate.getId())).thenReturn(Optional.of(testTemplate));
         doReturn("{\"key\":\"TEST-123\",\"summary\":\"Test Issue\"}").when(objectMapper).writeValueAsString(any());
         when(jsonTransformService.transformResponse(anyString(), anyString()))
@@ -338,7 +346,7 @@ class JiraSyncApplicationServiceTest {
         List<JiraJqlQuery> activeQueries = Arrays.asList(highPriorityQuery, lowPriorityQuery);
         when(jqlQueryRepository.findActiveQueriesOrderByPriority()).thenReturn(activeQueries);
         when(syncHistoryRepository.save(any(JiraSyncHistory.class))).thenReturn(testSyncHistory);
-        when(jiraSyncRetryTemplate.execute(any(RetryCallback.class), any(RecoveryCallback.class))).thenReturn(testJiraResponse);
+        when(jiraSyncRetryTemplate.<JiraIssueSearchResponse, RuntimeException>execute(ArgumentMatchers.<RetryCallback<JiraIssueSearchResponse, RuntimeException>>any(), ArgumentMatchers.<RecoveryCallback<JiraIssueSearchResponse>>any())).thenReturn(testJiraResponse);
         when(responseTemplateRepository.findById(anyString())).thenReturn(Optional.of(testTemplate));
         doReturn("{\"key\":\"TEST-123\",\"summary\":\"Test Issue\"}").when(objectMapper).writeValueAsString(any());
         when(jsonTransformService.transformResponse(anyString(), eq(testTemplate.getTemplateName()))).thenReturn(testCommonFormatJson);
@@ -351,7 +359,9 @@ class JiraSyncApplicationServiceTest {
         
         // Assert
         assertNotNull(result);
-        verify(jiraSyncRetryTemplate, times(2)).execute(any(RetryCallback.class), any(RecoveryCallback.class));
+        verify(jiraSyncRetryTemplate, times(2)).execute(
+            ArgumentMatchers.<RetryCallback<JiraIssueSearchResponse, RuntimeException>>any(),
+            ArgumentMatchers.<RecoveryCallback<JiraIssueSearchResponse>>any());
         verify(syncHistoryRepository, times(2)).save(any(JiraSyncHistory.class));
     }
     
@@ -362,7 +372,7 @@ class JiraSyncApplicationServiceTest {
         List<JiraJqlQuery> activeQueries = Arrays.asList(testJqlQuery);
         when(jqlQueryRepository.findActiveQueriesOrderByPriority()).thenReturn(activeQueries);
         when(syncHistoryRepository.save(any(JiraSyncHistory.class))).thenReturn(testSyncHistory);
-        when(jiraSyncRetryTemplate.execute(any(RetryCallback.class), any(RecoveryCallback.class))).thenReturn(testJiraResponse);
+        when(jiraSyncRetryTemplate.<JiraIssueSearchResponse, RuntimeException>execute(ArgumentMatchers.<RetryCallback<JiraIssueSearchResponse, RuntimeException>>any(), ArgumentMatchers.<RecoveryCallback<JiraIssueSearchResponse>>any())).thenReturn(testJiraResponse);
         when(responseTemplateRepository.findById(testTemplate.getId())).thenReturn(Optional.of(testTemplate));
         when(jsonTransformService.transformResponse(anyString(), eq(testTemplate.getTemplateName()))).thenReturn(testCommonFormatJson);
         
@@ -388,7 +398,7 @@ class JiraSyncApplicationServiceTest {
         List<JiraJqlQuery> activeQueries = Arrays.asList(testJqlQuery);
         when(jqlQueryRepository.findActiveQueriesOrderByPriority()).thenReturn(activeQueries);
         when(syncHistoryRepository.save(any(JiraSyncHistory.class))).thenReturn(testSyncHistory);
-        when(jiraSyncRetryTemplate.execute(any(RetryCallback.class), any(RecoveryCallback.class))).thenReturn(testJiraResponse);
+        when(jiraSyncRetryTemplate.<JiraIssueSearchResponse, RuntimeException>execute(ArgumentMatchers.<RetryCallback<JiraIssueSearchResponse, RuntimeException>>any(), ArgumentMatchers.<RecoveryCallback<JiraIssueSearchResponse>>any())).thenReturn(testJiraResponse);
         when(responseTemplateRepository.findById(testTemplate.getId())).thenReturn(Optional.of(testTemplate));
         doReturn("{\"key\":\"TEST-123\",\"summary\":\"Test Issue\"}").when(objectMapper).writeValueAsString(any());
         when(jsonTransformService.transformResponse(anyString(), eq(testTemplate.getTemplateName()))).thenReturn(testCommonFormatJson);
@@ -421,7 +431,7 @@ class JiraSyncApplicationServiceTest {
         doReturn("{\"key\":\"TEST-123\",\"summary\":\"Test Issue\"}").when(objectMapper).writeValueAsString(any());
         
         // リトライテンプレートのモック: 最初失敗、2回目成功をシミュレート
-        when(jiraSyncRetryTemplate.execute(any(RetryCallback.class), any(RecoveryCallback.class))).thenAnswer(invocation -> {
+        when(jiraSyncRetryTemplate.<JiraIssueSearchResponse, RuntimeException>execute(ArgumentMatchers.<RetryCallback<JiraIssueSearchResponse, RuntimeException>>any(), ArgumentMatchers.<RecoveryCallback<JiraIssueSearchResponse>>any())).thenAnswer(invocation -> {
             // 最初の呼び出しで成功を返す（実際のリトライロジックはモック化）
             return testJiraResponse;
         });
@@ -434,7 +444,7 @@ class JiraSyncApplicationServiceTest {
         
         // Assert
         assertNotNull(result);
-        verify(jiraSyncRetryTemplate).execute(any(RetryCallback.class), any(RecoveryCallback.class));
+        verify(jiraSyncRetryTemplate).execute(ArgumentMatchers.<RetryCallback<JiraIssueSearchResponse, RuntimeException>>any(), ArgumentMatchers.<RecoveryCallback<JiraIssueSearchResponse>>any());
         verify(syncHistoryRepository, times(2)).save(any(JiraSyncHistory.class));
         // projectRepository.save is handled by domain service, not application service
     }
@@ -450,7 +460,7 @@ class JiraSyncApplicationServiceTest {
         JiraAuthenticationException authException = new JiraAuthenticationException("Authentication failed", 401);
         
         // リトライテンプレートのモック: 認証エラーを直接スロー
-        when(jiraSyncRetryTemplate.execute(any(RetryCallback.class), any(RecoveryCallback.class))).thenThrow(authException);
+        when(jiraSyncRetryTemplate.<JiraIssueSearchResponse, RuntimeException>execute(ArgumentMatchers.<RetryCallback<JiraIssueSearchResponse, RuntimeException>>any(), ArgumentMatchers.<RecoveryCallback<JiraIssueSearchResponse>>any())).thenThrow(authException);
         
         // Act
         JiraSyncHistory result = service.executeSync();
@@ -479,7 +489,7 @@ class JiraSyncApplicationServiceTest {
         JiraRateLimitException rateLimitException = new JiraRateLimitException("Rate limit exceeded", 60);
         
         // リトライテンプレートのモック: レート制限エラーをスロー
-        when(jiraSyncRetryTemplate.execute(any(RetryCallback.class), any(RecoveryCallback.class))).thenThrow(rateLimitException);
+        when(jiraSyncRetryTemplate.<JiraIssueSearchResponse, RuntimeException>execute(ArgumentMatchers.<RetryCallback<JiraIssueSearchResponse, RuntimeException>>any(), ArgumentMatchers.<RecoveryCallback<JiraIssueSearchResponse>>any())).thenThrow(rateLimitException);
         
         // Act
         JiraSyncHistory result = service.executeSync();
@@ -501,7 +511,7 @@ class JiraSyncApplicationServiceTest {
         ResourceAccessException networkException = new ResourceAccessException("Connection timeout");
         
         // リトライテンプレートのモック: 全リトライ失敗後にリカバリーが呼ばれる想定
-        when(jiraSyncRetryTemplate.execute(any(RetryCallback.class), any(RecoveryCallback.class))).thenAnswer(invocation -> {
+        when(jiraSyncRetryTemplate.<JiraIssueSearchResponse, RuntimeException>execute(ArgumentMatchers.<RetryCallback<JiraIssueSearchResponse, RuntimeException>>any(), ArgumentMatchers.<RecoveryCallback<JiraIssueSearchResponse>>any())).thenAnswer(invocation -> {
             // リカバリーコールバックを呼び出して管理者通知をテスト
             throw networkException;
         });

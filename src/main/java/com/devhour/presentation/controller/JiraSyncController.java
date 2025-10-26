@@ -87,11 +87,11 @@ public class JiraSyncController {
     public ResponseEntity<JiraConnectionResponse> getConnection() {
         JiraConnectionResponse response = JiraConnectionResponse.of(
             jiraConfiguration.getBaseUrl(),
-            jiraConfiguration.getAuth().getTokenEnvKey(),
-            jiraConfiguration.getAuth().getUsernameEnvKey(),
+            "JIRA_API_TOKEN",      // 環境変数キー名（固定値）
+            "JIRA_USERNAME",        // 環境変数キー名（固定値）
             jiraConfiguration.isAuthenticationConfigured()
         );
-        
+
         return ResponseEntity.ok(response);
     }
     

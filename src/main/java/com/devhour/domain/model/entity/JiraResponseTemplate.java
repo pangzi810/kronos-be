@@ -3,7 +3,6 @@ package com.devhour.domain.model.entity;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.regex.Pattern;
 
 /**
  * レスポンステンプレートエンティティ
@@ -198,55 +197,6 @@ public class JiraResponseTemplate {
         if (template.trim().isEmpty()) {
             throw new IllegalArgumentException("Velocityテンプレートが空です");
         }
-    }
-    
-    /**
-     * ${} 括弧のバランスチェック
-     */
-    private boolean isBalancedBraces(String template) {
-        int balance = 0;
-        
-        for (int i = 0; i < template.length(); i++) {
-            char c = template.charAt(i);
-            
-            if (c == '$') {
-                // ${ または $!{ のパターンをチェック
-                if (i + 1 < template.length() && template.charAt(i + 1) == '{') {
-                    balance++;
-                    i++; // skip '{'
-                } else if (i + 2 < template.length() && template.charAt(i + 1) == '!' && template.charAt(i + 2) == '{') {
-                    balance++;
-                    i += 2; // skip '!{'
-                }
-            } else if (c == '}') {
-                balance--;
-                if (balance < 0) {
-                    return false; // 対応しない閉じ括弧
-                }
-            }
-        }
-        
-        return balance == 0;
-    }
-    
-    /**
-     * Velocityディレクティブのバランスチェック
-     */
-    private boolean isBalancedDirectives(String template) {
-        int ifCount = countOccurrences(template, "#if\\s*\\(");
-        int foreachCount = countOccurrences(template, "#foreach\\s*\\(");
-        int endCount = countOccurrences(template, "#end");
-        
-        // #if と #foreach はどちらも #end で終了するため、合計数がendCountと一致すべき
-        return (ifCount + foreachCount) == endCount;
-    }
-    
-    /**
-     * 指定されたパターンの出現回数をカウント
-     */
-    private int countOccurrences(String text, String pattern) {
-        Pattern p = Pattern.compile(pattern);
-        return (int) p.matcher(text).results().count();
     }
     
     /**

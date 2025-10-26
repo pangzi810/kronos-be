@@ -221,7 +221,6 @@ class JiraSyncHistoryDetailMapperTest extends AbstractMapperTest {
     @DisplayName("JIRAイシューキーで詳細検索")
     void selectByJiraIssueKey_ExistingIssue_ReturnsDetails() {
         // Arrange
-        String targetIssueKey = "ISSUE-123";
         LocalDateTime baseTime = LocalDateTime.now().withNano(0);
         
         JiraSyncHistoryDetail detail1 = JiraSyncHistoryDetail.createSuccess(

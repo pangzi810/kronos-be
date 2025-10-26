@@ -3,7 +3,6 @@ package com.devhour.infrastructure.kafka;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -11,7 +10,6 @@ import org.springframework.kafka.support.SendResult;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.devhour.domain.event.WorkRecordApprovalEvent;
 import com.devhour.domain.repository.DomainEventRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,14 +29,12 @@ public class DomainEventPublisher {
     
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final DomainEventRepository domainEventRepository;
-    private final ObjectMapper objectMapper;
     
     public DomainEventPublisher(KafkaTemplate<String, Object> kafkaTemplate,
                                DomainEventRepository domainEventRepository,
                                ObjectMapper objectMapper) {
         this.kafkaTemplate = kafkaTemplate;
         this.domainEventRepository = domainEventRepository;
-        this.objectMapper = objectMapper;
     }
     
     /**

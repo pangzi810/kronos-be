@@ -24,11 +24,9 @@ class JiraSyncHistoryMapperTest extends AbstractMapperTest {
     @Autowired
     private JiraSyncHistoryMapper syncHistoryMapper;
 
-    private LocalDateTime testTime;
 
     @BeforeEach
     void setUp() {
-        testTime = LocalDateTime.now().withNano(0);
     }
 
     @Test

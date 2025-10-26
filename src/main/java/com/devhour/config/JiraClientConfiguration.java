@@ -1,8 +1,5 @@
 package com.devhour.config;
 
-import com.devhour.domain.exception.JiraAuthenticationException;
-import com.devhour.domain.exception.JiraRateLimitException;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -14,29 +11,32 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.concurrent.TimeUnit;
+import com.devhour.domain.exception.JiraAuthenticationException;
+import com.devhour.domain.exception.JiraRateLimitException;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * JIRA API通信用のRestTemplate設定クラス
- * 
+ *
  * JIRA API専用のRestTemplateを構成し、タイムアウト設定、
  * 接続プール設定、エラーハンドラーを適用する。
+ *
+ * jira.integration.enabled=true の場合のみ有効化される
  */
 @Configuration
 @ConditionalOnClass(HttpClientBuilder.class)
+@ConditionalOnProperty(name = "jira.integration.enabled", havingValue = "true", matchIfMissing = false)
 @EnableConfigurationProperties(JiraConfiguration.class)
 @Slf4j
 public class JiraClientConfiguration {
-    
+
     /**
      * JIRA API通信専用のRestTemplateを作成
-     * 
+     *
      * @param jiraConfiguration JIRA設定
      * @return 設定済みのRestTemplate
      */
     @Bean
-    @ConditionalOnProperty(value = "jira.base-url")
     @Qualifier("jiraRestTemplate")
     public RestTemplate jiraRestTemplate(JiraConfiguration jiraConfiguration) {
         log.info("JIRA RestTemplate設定開始");

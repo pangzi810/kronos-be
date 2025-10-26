@@ -55,11 +55,9 @@ public class OktaSecurityConfig {
     @Value("${okta.oauth2.client-id}")
     private String clientId;
     
-    private final OktaUserSyncService oktaUserSyncService;
     private final OktaJwtAuthenticationConverter jwtAuthenticationConverter;
     
     public OktaSecurityConfig(OktaUserSyncService oktaUserSyncService) {
-        this.oktaUserSyncService = oktaUserSyncService;
         // Create converter once and reuse
         this.jwtAuthenticationConverter = new OktaJwtAuthenticationConverter(oktaUserSyncService);
         logger.info("OktaSecurityConfig initialized with converter: {}", jwtAuthenticationConverter);

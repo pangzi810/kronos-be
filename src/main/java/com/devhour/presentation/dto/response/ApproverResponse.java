@@ -1,10 +1,9 @@
 package com.devhour.presentation.dto.response;
 
-import com.devhour.domain.model.entity.Approver;
-import com.fasterxml.jackson.annotation.JsonFormat;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import com.devhour.domain.model.entity.Approver;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 /**
  * 承認者関係レスポンスDTO
@@ -36,14 +35,10 @@ public class ApproverResponse {
     public static ApproverResponse from(Approver approver) {
         ApproverResponse response = new ApproverResponse();
         response.id = approver.getId();
-        response.userId = approver.getUserId(); // 後方互換性のため、メールアドレスを返す
-        response.approverId = approver.getApproverId(); // 後方互換性のため、メールアドレスを返す
         response.targetEmail = approver.getTargetEmail();
         response.approverEmail = approver.getApproverEmail();
         response.effectiveFrom = approver.getEffectiveFrom().toLocalDate();
         response.effectiveTo = approver.getEffectiveTo() != null ? approver.getEffectiveTo().toLocalDate() : null;
-        response.isDeleted = approver.isDeleted();
-        response.isCurrentlyEffective = approver.isCurrentlyEffective();
         response.createdAt = approver.getCreatedAt();
         response.updatedAt = approver.getUpdatedAt();
         

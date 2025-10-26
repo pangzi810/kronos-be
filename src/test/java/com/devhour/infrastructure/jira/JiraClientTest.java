@@ -50,16 +50,19 @@ class JiraClientTest {
     @BeforeEach
     void setUp() {
         objectMapper = new ObjectMapper();
-        
-        // デフォルトの設定値をモック
-        when(jiraConfiguration.getFullApiUrl(anyString())).thenAnswer(invocation -> 
+
+        // AuthConfigをモック
+        JiraConfiguration.AuthConfig authConfig = mock(JiraConfiguration.AuthConfig.class, org.mockito.Mockito.withSettings().lenient());
+        when(authConfig.getToken()).thenReturn("test-token");
+
+        // デフォルトの設定値をモック (lenientを明示的に指定)
+        org.mockito.Mockito.lenient().when(jiraConfiguration.getFullApiUrl(anyString())).thenAnswer(invocation ->
             "https://company.atlassian.net" + invocation.getArgument(0));
-        when(jiraConfiguration.getAuthUsername()).thenReturn("test-user");
-        when(jiraConfiguration.getAuthToken()).thenReturn("test-token");
-        when(jiraConfiguration.isConfigured()).thenReturn(true);
-        when(jiraConfiguration.getTimeout())
+        org.mockito.Mockito.lenient().when(jiraConfiguration.getAuth()).thenReturn(authConfig);
+        org.mockito.Mockito.lenient().when(jiraConfiguration.isConfigured()).thenReturn(true);
+        org.mockito.Mockito.lenient().when(jiraConfiguration.getTimeout())
             .thenReturn(createTimeoutConfig(30000, 60000));
-        
+
         jiraClient = new JiraClient(jiraRestTemplate, jiraConfiguration);
     }
 
@@ -110,7 +113,7 @@ class JiraClientTest {
         HttpEntity<String> capturedEntity = entityCaptor.getValue();
         HttpHeaders headers = capturedEntity.getHeaders();
         assertThat(headers.getContentType()).isEqualTo(MediaType.APPLICATION_JSON);
-        assertThat(headers.get("Authorization")).contains("Basic dGVzdC11c2VyOnRlc3QtdG9rZW4=");
+        assertThat(headers.get("Authorization")).contains("Bearer test-token");
     }
 
     @Test
@@ -290,12 +293,8 @@ class JiraClientTest {
     void constructor_設定が未設定の場合JiraClientExceptionが発生すること() {
         // given
         JiraConfiguration invalidConfig = mock(JiraConfiguration.class);
-        JiraConfiguration.AuthConfig authConfig = mock(JiraConfiguration.AuthConfig.class);
-        
+
         when(invalidConfig.isConfigured()).thenReturn(false);
-        when(invalidConfig.getAuth()).thenReturn(authConfig);
-        when(authConfig.getUsernameEnvKey()).thenReturn("JIRA_USERNAME");
-        when(authConfig.getTokenEnvKey()).thenReturn("JIRA_API_TOKEN");
 
         // when & then
         // Note: Constructor does not throw exception when configuration is invalid
@@ -308,20 +307,15 @@ class JiraClientTest {
     void searchIssues_設定が未設定の場合JiraClientExceptionが発生すること() {
         // given
         JiraConfiguration invalidConfig = mock(JiraConfiguration.class);
-        JiraConfiguration.AuthConfig authConfig = mock(JiraConfiguration.AuthConfig.class);
-        
-        // Mock auth config for constructor validation (only called when isConfigured = false)
-        when(invalidConfig.getAuth()).thenReturn(authConfig);
-        when(authConfig.getUsernameEnvKey()).thenReturn("JIRA_USERNAME");
-        when(authConfig.getTokenEnvKey()).thenReturn("JIRA_API_TOKEN");
+
         when(invalidConfig.isConfigured()).thenReturn(false);
-        
+
         JiraClient clientWithInvalidConfig = new JiraClient(jiraRestTemplate, invalidConfig);
 
         // when & then
         assertThatThrownBy(() -> clientWithInvalidConfig.searchIssues("project = PROJ", 50, null))
             .isInstanceOf(JiraClient.JiraClientException.class)
-            .hasMessageContaining("JIRA認証情報が設定されていません。JIRA統合機能を利用できません。");
+            .hasMessageContaining("JIRA APIトークンが設定されていません。JIRA統合機能を利用できません。");
     }
 
     @Test

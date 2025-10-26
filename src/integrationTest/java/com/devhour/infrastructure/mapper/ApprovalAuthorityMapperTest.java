@@ -1,18 +1,13 @@
 package com.devhour.infrastructure.mapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import com.devhour.domain.model.entity.ApprovalAuthority;
 import com.devhour.domain.model.valueobject.Position;
 
@@ -29,7 +24,6 @@ class ApprovalAuthorityMapperTest extends AbstractMapperTest {
     private ApprovalAuthorityMapper approvalAuthorityMapper;
 
     private ApprovalAuthority testApprovalAuthority;
-    private final LocalDateTime testTime = LocalDateTime.of(2024, 1, 15, 10, 0, 0);
 
     @BeforeEach
     void setUp() {

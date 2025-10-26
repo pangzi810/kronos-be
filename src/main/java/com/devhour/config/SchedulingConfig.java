@@ -13,16 +13,17 @@ import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 
 /**
  * スケジューリング設定
- * 
+ *
  * 定期実行タスクを有効化し、ShedLockによる分散環境での重複実行防止を設定
+ * jira.integration.enabled=true の場合のみ有効化される
  */
 @Configuration
 @EnableScheduling
 @EnableSchedulerLock(defaultLockAtMostFor = "10m", defaultLockAtLeastFor = "1m")
 @ConditionalOnProperty(
-    value = "jira.sync.scheduler.enabled", 
-    havingValue = "true", 
-    matchIfMissing = true
+    name = "jira.integration.enabled",
+    havingValue = "true",
+    matchIfMissing = false
 )
 public class SchedulingConfig {
     

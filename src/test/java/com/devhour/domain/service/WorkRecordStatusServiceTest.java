@@ -3,34 +3,28 @@ package com.devhour.domain.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import com.devhour.domain.model.entity.WorkRecord;
 import com.devhour.domain.model.entity.WorkRecordApproval;
 import com.devhour.domain.model.valueobject.ApprovalStatus;
-import com.devhour.domain.model.valueobject.CategoryHours;
 import com.devhour.domain.model.valueobject.CategoryCode;
-import java.math.BigDecimal;
-import java.util.Map;
+import com.devhour.domain.model.valueobject.CategoryHours;
 import com.devhour.domain.repository.WorkRecordRepository;
 
 /**

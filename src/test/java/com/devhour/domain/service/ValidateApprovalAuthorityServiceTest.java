@@ -1,7 +1,6 @@
 package com.devhour.domain.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -17,7 +16,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import com.devhour.domain.exception.EntityNotFoundException;
 import com.devhour.domain.exception.NoApprovalAuthorityException;
 import com.devhour.domain.model.entity.User;
 import com.devhour.domain.repository.ApproverRepository;

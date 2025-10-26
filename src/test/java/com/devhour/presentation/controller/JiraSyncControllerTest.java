@@ -551,8 +551,7 @@ class JiraSyncControllerTest {
 
     private JiraConfiguration.AuthConfig createAuthConfig() {
         JiraConfiguration.AuthConfig authConfig = new JiraConfiguration.AuthConfig();
-        authConfig.setTokenEnvKey("JIRA_API_TOKEN");
-        authConfig.setUsernameEnvKey("JIRA_USERNAME");
+        authConfig.setToken("test-token");
         return authConfig;
     }
 

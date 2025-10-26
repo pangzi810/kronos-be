@@ -2,22 +2,17 @@ package com.devhour.infrastructure.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
 import com.devhour.domain.model.entity.ApprovalAuthority;
 import com.devhour.domain.model.valueobject.Position;
 import com.devhour.infrastructure.mapper.ApprovalAuthorityMapper;
@@ -36,7 +31,6 @@ class ApprovalAuthorityRepositoryImplTest {
 
     private ApprovalAuthorityRepositoryImpl repository;
 
-    private ApprovalAuthority testApprovalAuthority;
     private ApprovalAuthority testManager;
     private ApprovalAuthority testDepartmentManager;
 
@@ -67,8 +61,6 @@ class ApprovalAuthorityRepositoryImplTest {
             null, null
         );
 
-        // 共通テスト用データ
-        testApprovalAuthority = testManager;
     }
 
     @Test
