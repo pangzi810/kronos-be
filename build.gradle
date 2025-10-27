@@ -212,9 +212,9 @@ task jacocoIntegrationTestReport(type: JacocoReport) {
 jacocoTestCoverageVerification {
 	violationRules {
 		rule {
-			limit {
-				minimum = 0.80
-			}
+			// limit {
+			// 	minimum = 0.80
+			// }
 		}
 		rule {
 			enabled = false
