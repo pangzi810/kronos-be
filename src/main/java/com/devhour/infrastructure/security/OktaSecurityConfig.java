@@ -28,6 +28,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import com.devhour.application.service.OktaUserSyncService;
+import com.nimbusds.jose.JOSEObjectType;
+import com.nimbusds.jose.proc.DefaultJOSEObjectTypeVerifier;
 
 /**
  * Okta OAuth2 Resource Server設定クラス
@@ -175,7 +177,14 @@ public class OktaSecurityConfig {
     @Bean
     public JwtDecoder jwtDecoder() {
 
-        NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
+        NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder
+        .withJwkSetUri(jwkSetUri)
+        .jwtProcessorCustomizer(processor -> processor.setJWSTypeVerifier(new DefaultJOSEObjectTypeVerifier<>(
+            new JOSEObjectType("application/okta-internal-at+jwt"),
+            new JOSEObjectType("at+jwt"),
+            JOSEObjectType.JWT
+        )))
+        .build();
 
         // JWT validation rules
         OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuerUri);

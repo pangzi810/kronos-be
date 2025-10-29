@@ -230,7 +230,7 @@ public class JiraSyncApplicationService {
             try {
                 long startTime = performanceMonitoringEnabled ? System.currentTimeMillis() : 0;
                 // リトライ可能なJQLクエリ実行
-                response = executeJqlQueryWithRetry(query, response != null ? response.getStartAt() : null);
+                response = executeJqlQueryWithRetry(query, streamingChunkSize, response != null ? response.getStartAt() + streamingChunkSize: null);
                 
                 int totalIssues = response.getIssues().size();
                 log.info("JQLクエリ実行結果: {} 件のイシューを取得 (クエリ: {})", totalIssues, query.getQueryName());
@@ -276,7 +276,7 @@ public class JiraSyncApplicationService {
                 log.error("JQLクエリ実行中に予期しないエラーが発生: {} - {}", query.getQueryName(), e.getMessage(), e);
                 throw new JiraSyncException("JQLクエリ実行中のエラー: " + e.getMessage(), e);
             }
-        } while (response.getStartAt() + batchSize < response.getTotal());
+        } while (response.getStartAt() < response.getTotal());
     }
     
     /**
@@ -341,7 +341,7 @@ public class JiraSyncApplicationService {
      * @throws JiraRateLimitException レート制限エラーの場合（REQ-8.3）
      * @throws JiraSyncException その他のエラーの場合
      */
-    private JiraIssueSearchResponse executeJqlQueryWithRetry(JiraJqlQuery query, Integer startAt) {
+    private JiraIssueSearchResponse executeJqlQueryWithRetry(JiraJqlQuery query, Integer chunkSize, Integer startAt) {
         return jiraSyncRetryTemplate.execute(new RetryCallback<JiraIssueSearchResponse, RuntimeException>() {
             @Override
             public JiraIssueSearchResponse doWithRetry(RetryContext context) throws RuntimeException {
@@ -353,7 +353,7 @@ public class JiraSyncApplicationService {
                     // 基本的なJQLクエリ実行
                     return jiraClient.searchIssues(
                         query.getJqlExpression(), 
-                        50, // maxResults
+                        chunkSize, // maxResults
                         startAt   // startAt
                     );
                     

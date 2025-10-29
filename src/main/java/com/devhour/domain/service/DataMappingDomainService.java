@@ -121,9 +121,17 @@ public class DataMappingDomainService {
             {
               "issueId": "$!{id}",
               "issueKey": "$!{key}",
-              "description": "$!{fields.description}",
+              #if ($fields.description && $fields.descritption != "")
+              "description": "$esc.json($!{fields.description})",
+              #else
+              "description": "",
+              #end
               "projectKey": "$!{fields.project.key}",
-              "projectName": "$!{fields.summary}",
+              #if ($fields.summary && $fields.summary != "")
+              "projectName": "$esc.json($!{fields.summary})",
+              #else
+              "projectName": "",
+              #end
               "reporter": "$!{fields.reporter.displayName}",
               "created": "$!{fields.created}",
               "updated": "$!{fields.updated}",
@@ -311,6 +319,7 @@ public class DataMappingDomainService {
      */
     private ProjectStatus mapProjectStatus(String statusString) {
         if (statusString == null || statusString.trim().isEmpty()) {
+            log.info("project status is null or empty, defaulting to {}", statusMappingConfig.getDefaultStatus());
             return statusMappingConfig.getDefaultStatus();
         }
         
@@ -318,6 +327,7 @@ public class DataMappingDomainService {
         
         ProjectStatus mappedStatus = statusMappingMap.get(normalizedStatus);
         if (mappedStatus != null) {
+            log.info("status '{}' to {}", mappedStatus);
             return mappedStatus;    
         }
         
