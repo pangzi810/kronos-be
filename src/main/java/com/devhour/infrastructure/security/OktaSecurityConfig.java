@@ -28,6 +28,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import com.devhour.application.service.OktaUserSyncService;
+import com.nimbusds.jose.JOSEObjectType;
+import com.nimbusds.jose.proc.DefaultJOSEObjectTypeVerifier;
 
 /**
  * Okta OAuth2 Resource Server設定クラス
@@ -52,8 +54,11 @@ public class OktaSecurityConfig {
     @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}")
     private String jwkSetUri;
     
-    @Value("${okta.oauth2.client-id}")
+    @Value("${spring.security.oauth2.resourceserver.jwt.client-id}")
     private String clientId;
+
+    @Value("${spring.security.oauth2.resourceserver.jwt.audience}")
+    private String audience;
     
     private final OktaJwtAuthenticationConverter jwtAuthenticationConverter;
     
@@ -166,35 +171,42 @@ public class OktaSecurityConfig {
     
     /**
      * JwtDecoderの設定
-     * RS256署名検証、issuer、audience、有効期限チェックを含む
+     * JWK Set URIから自動的に署名アルゴリズムを検出
+     * issuer、audience、有効期限チェックを含む
      */
     @Bean
     public JwtDecoder jwtDecoder() {
-        
-        NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri)
-                .jwsAlgorithm(org.springframework.security.oauth2.jose.jws.SignatureAlgorithm.RS256)
-                .build();
-        
+
+        NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder
+        .withJwkSetUri(jwkSetUri)
+        .jwtProcessorCustomizer(processor -> processor.setJWSTypeVerifier(new DefaultJOSEObjectTypeVerifier<>(
+            new JOSEObjectType("application/okta-internal-at+jwt"),
+            new JOSEObjectType("at+jwt"),
+            JOSEObjectType.JWT
+        )))
+        .build();
+
         // JWT validation rules
         OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuerUri);
         OAuth2TokenValidator<Jwt> withAudience = new OAuth2TokenValidator<Jwt>() {
             @Override
             public org.springframework.security.oauth2.core.OAuth2TokenValidatorResult validate(Jwt jwt) {
                 // Okta typically includes the client ID in the 'aud' claim for access tokens
-                if (jwt.getAudience() != null && 
-                    (jwt.getAudience().contains(clientId) || jwt.getAudience().contains("api://kronos"))) {
+                if (jwt.getAudience() != null &&
+                    (jwt.getAudience().contains(clientId) || jwt.getAudience().contains(audience))) {
                     return org.springframework.security.oauth2.core.OAuth2TokenValidatorResult.success();
                 }
                 return org.springframework.security.oauth2.core.OAuth2TokenValidatorResult.failure(
-                    new OAuth2Error("invalid_audience", "The audience is invalid", null));
+                    new OAuth2Error("invalid_audience",
+                        "The audience is invalid. Expected: " + clientId + " or " + audience, null));
             }
         };
-        
+
         OAuth2TokenValidator<Jwt> validator = new DelegatingOAuth2TokenValidator<>(
             withIssuer, withAudience);
-        
+
         jwtDecoder.setJwtValidator(validator);
-        
+
         return jwtDecoder;
     }
     
@@ -207,15 +219,10 @@ public class OktaSecurityConfig {
         
         // 開発環境とOktaドメインを許可
         configuration.setAllowedOriginPatterns(Arrays.asList(
-            "http://localhost:3000",           // フロントエンド開発サーバー
             "http://localhost:4173",           // Vite preview default port
-            "http://localhost:4174",           // Vite preview alternate port
             "http://localhost:5173",           // Vite dev default port
-            "http://localhost:5174",           // Vite dev alternate port
             "http://127.0.0.1:4173",           // Vite preview with IP
-            "http://127.0.0.1:4174",           // Vite preview alternate with IP
             "http://127.0.0.1:5173",           // Vite dev with IP
-            "http://127.0.0.1:5174",           // Vite dev alternate with IP
             "https://*.okta.com",              // Oktaドメイン
             "https://*.oktapreview.com",       // Okta Previewドメイン
             "https://*.okta-emea.com"          // Okta EMEAドメイン

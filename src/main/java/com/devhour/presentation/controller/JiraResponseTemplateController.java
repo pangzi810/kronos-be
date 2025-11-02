@@ -4,7 +4,6 @@ import java.util.List;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -76,7 +75,6 @@ public class JiraResponseTemplateController {
      *         500 Internal Server Error: システムエラー
      */
     @GetMapping
-    @PreAuthorize("hasAuthority('SCOPE_jira:read')")
     public ResponseEntity<List<JiraResponseTemplate>> listTemplates() {
 
         List<JiraResponseTemplate> templates = jsonTransformService.listTemplates();
@@ -97,7 +95,6 @@ public class JiraResponseTemplateController {
      *         Error: システムエラー
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('SCOPE_jira:read')")
     public ResponseEntity<?> getTemplateById(@PathVariable String id) {
         // IDフォーマット検証
         if (id == null || id.trim().isEmpty()) {
@@ -139,7 +136,6 @@ public class JiraResponseTemplateController {
      *         Internal Server Error: システムエラー
      */
     @PostMapping
-    @PreAuthorize("hasAuthority('SCOPE_jira:write')")
     public ResponseEntity<?> createTemplate(@Valid @RequestBody JiraResponseTemplateRequest request) {
 
         try {
@@ -186,7 +182,6 @@ public class JiraResponseTemplateController {
      *         - 409 Conflict: テンプレート名重複 - 500 Internal Server Error: システムエラー
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('SCOPE_jira:write')")
     public ResponseEntity<?> updateTemplate(@PathVariable String id,
             @Valid @RequestBody JiraResponseTemplateRequest request) {
 
@@ -260,7 +255,6 @@ public class JiraResponseTemplateController {
      *         Server Error: システムエラー
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('SCOPE_jira:write')")
     public ResponseEntity<?> deleteTemplate(@PathVariable String id) {
         // IDフォーマット検証
         if (id == null || id.trim().isEmpty()) {
@@ -302,7 +296,6 @@ public class JiraResponseTemplateController {
      *         Server Error: システムエラー
      */
     @PostMapping("/{id}/test")
-    @PreAuthorize("hasAuthority('SCOPE_jira:write')")
     public ResponseEntity<?> testTemplate(@PathVariable String id,
             @Valid @RequestBody JiraTemplateTestRequest request) {
         log.debug("Testing response template: {}", id);

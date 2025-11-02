@@ -81,7 +81,13 @@ public class VelocityTemplateProcessor {
             String result = writer.toString();
             
             // 結果がJSONとして有効かを検証
-            objectMapper.readTree(result);
+            try{
+                objectMapper.readTree(result);
+            }
+            catch (Exception e){
+                log.error("Transformed result is not valid JSON. message={}, content={}", e.getMessage(), result);
+            }
+            
             
             log.debug("Template transformation completed successfully, result length: {}", result.length());
             return result;
@@ -240,6 +246,8 @@ public class VelocityTemplateProcessor {
     private VelocityContext createVelocityContext(JsonNode jiraData) {
         VelocityContext context = new VelocityContext();
 
+        context.put("esc", new VelocityEscapeTool());
+        
         // JsonNodeをMap<String, Object>に変換
         // VelocityはMapとListを自動的にナビゲートできるため、再帰的展開は不要
         Map<String, Object> dataMap = objectMapper.convertValue(

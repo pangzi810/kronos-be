@@ -3,7 +3,6 @@ package com.devhour.presentation.controller;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -43,7 +42,6 @@ public class ApproverController {
      * 承認者一覧取得
      */
     @GetMapping("/approvers")
-    @PreAuthorize("hasAuthority('SCOPE_approver:read')")
     @Operation(summary = "承認者一覧取得", description = "ログインユーザーの承認者一覧を取得します")
     public ResponseEntity<List<UserResponse>> getApprovers() {
         
@@ -62,7 +60,6 @@ public class ApproverController {
      * 承認対象者一覧を取得
      */
     @GetMapping("/targets")
-    @PreAuthorize("hasAuthority('SCOPE_approver:read')")
     @Operation(summary = "承認対象者一覧取得", description = "ログインユーザーの承認対象者一覧を取得します")
     public ResponseEntity<List<UserResponse>> getApprovalTargets() {
 

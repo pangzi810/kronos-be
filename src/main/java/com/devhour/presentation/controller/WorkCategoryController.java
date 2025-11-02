@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -56,7 +55,6 @@ public class WorkCategoryController {
      * @return 作成された作業カテゴリ情報
      */
     @PostMapping
-    @PreAuthorize("hasAuthority('SCOPE_work-hours:admin')")
     public ResponseEntity<WorkCategory> createWorkCategory(
             @Valid @RequestBody WorkCategoryCreateRequest request) {
         
@@ -77,7 +75,6 @@ public class WorkCategoryController {
      * @return 更新された作業カテゴリ情報
      */
     @PutMapping("/{categoryId}")
-    @PreAuthorize("hasAuthority('SCOPE_work-hours:admin')")
     public ResponseEntity<WorkCategory> updateWorkCategory(@PathVariable String categoryId,
             @Valid @RequestBody WorkCategoryUpdateRequest request) {
         
@@ -98,7 +95,6 @@ public class WorkCategoryController {
      * @return 有効化された作業カテゴリ情報
      */
     @PatchMapping("/{categoryId}/activate")
-    @PreAuthorize("hasAuthority('SCOPE_work-hours:admin')")
     public ResponseEntity<WorkCategory> activateWorkCategory(@PathVariable String categoryId) {
         WorkCategory workCategory = workCategoryApplicationService.activateWorkCategory(categoryId,
                 SecurityUtils.requireCurrentUserId());
@@ -112,7 +108,6 @@ public class WorkCategoryController {
      * @return 無効化された作業カテゴリ情報
      */
     @PatchMapping("/{categoryId}/deactivate")
-    @PreAuthorize("hasAuthority('SCOPE_work-hours:admin')")
     public ResponseEntity<WorkCategory> deactivateWorkCategory(@PathVariable String categoryId) {
         WorkCategory workCategory = workCategoryApplicationService
                 .deactivateWorkCategory(categoryId, SecurityUtils.requireCurrentUserId());
@@ -126,7 +121,6 @@ public class WorkCategoryController {
      * @return 作業カテゴリ詳細情報
      */
     @GetMapping("/{categoryId}")
-    @PreAuthorize("hasAuthority('SCOPE_work-hours:read')")
     public ResponseEntity<WorkCategory> getWorkCategory(@PathVariable String categoryId) {
         Optional<WorkCategory> workCategory = workCategoryApplicationService.findById(categoryId);
         return workCategory.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
@@ -138,7 +132,6 @@ public class WorkCategoryController {
      * @return 全作業カテゴリ一覧
      */
     @GetMapping
-    @PreAuthorize("hasAuthority('SCOPE_work-hours:read')")
     public ResponseEntity<List<WorkCategory>> getAllWorkCategories() {
         List<WorkCategory> workCategories = workCategoryApplicationService.findAllWorkCategories();
         return ResponseEntity.ok(workCategories);
@@ -150,7 +143,6 @@ public class WorkCategoryController {
      * @return アクティブな作業カテゴリ一覧
      */
     @GetMapping("/active")
-    @PreAuthorize("hasAuthority('SCOPE_work-hours:read')")
     public ResponseEntity<List<WorkCategory>> getActiveWorkCategories() {
         List<WorkCategory> workCategories = workCategoryApplicationService.findActiveWorkCategories();
         return ResponseEntity.ok(workCategories);

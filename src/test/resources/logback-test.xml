@@ -12,7 +12,7 @@
     <logger name="tc" level="INFO"/>
 
     <!-- Application logging -->
-    <logger name="com.devhour" level="DEBUG"/>
+    <logger name="com.devhour" level="INFO"/>
 
     <root level="INFO">
         <appender-ref ref="STDOUT"/>

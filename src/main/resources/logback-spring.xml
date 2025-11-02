@@ -45,9 +45,9 @@
         </logger>
         
         <!-- アプリケーションのルートロガー -->
-        <logger name="com.devhour" level="DEBUG"/>
+        <logger name="com.devhour" level="INFO"/>
         <logger name="org.springframework" level="INFO"/>
-        <logger name="org.mybatis" level="DEBUG"/>
+        <logger name="org.mybatis" level="INFO"/>
         <logger name="com.zaxxer.hikari" level="INFO"/>
         
         <root level="INFO">
@@ -142,7 +142,7 @@
             <appender-ref ref="AUDIT_CONSOLE"/>
         </logger>
         
-        <logger name="com.devhour" level="DEBUG"/>
+        <logger name="com.devhour" level="INFO"/>
         <logger name="org.springframework" level="WARN"/>
         <logger name="org.mybatis" level="WARN"/>
         

@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.devhour.domain.event.WorkRecordApprovalEvent;
@@ -40,7 +39,7 @@ public class DomainEventPublisher {
     /**
      * 定期的に未発行イベントを発行（5秒ごと）
      */
-    @Scheduled(fixedDelay = 5000)
+    // @Scheduled(fixedDelay = 5000)
     @Transactional
     public void publishPendingEvents() {
         List<WorkRecordApprovalEvent> pendingEvents = 
@@ -54,7 +53,7 @@ public class DomainEventPublisher {
     /**
      * リトライ可能なイベントを再発行（30秒ごと）
      */
-    @Scheduled(fixedDelay = 30000)
+    // @Scheduled(fixedDelay = 30000)
     @Transactional
     public void retryFailedEvents() {
         List<WorkRecordApprovalEvent> retryableEvents = 
@@ -69,7 +68,7 @@ public class DomainEventPublisher {
     /**
      * 古い発行済みイベントを削除（毎日深夜2時）
      */
-    @Scheduled(cron = "0 0 2 * * *")
+    // @Scheduled(cron = "0 0 2 * * *")
     @Transactional
     public void cleanupOldEvents() {
         LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);

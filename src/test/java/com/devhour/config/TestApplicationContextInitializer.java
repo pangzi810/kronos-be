@@ -19,7 +19,7 @@ public class TestApplicationContextInitializer implements ApplicationContextInit
         System.setProperty("spring.security.oauth2.resourceserver.jwt.issuer-uri", "");
         System.setProperty("spring.security.oauth2.resourceserver.jwt.jwk-set-uri", "");
         System.setProperty("okta.oauth2.issuer", "");
-        System.setProperty("okta.oauth2.client-id", "");
+        System.setProperty("spring.security.oauth2.resourceserver.jwt.client-id", "");
         
         // Add test properties programmatically
         TestPropertySourceUtils.addInlinedPropertiesToEnvironment(applicationContext,
@@ -27,7 +27,7 @@ public class TestApplicationContextInitializer implements ApplicationContextInit
             "spring.security.oauth2.resourceserver.jwt.issuer-uri=",
             "spring.security.oauth2.resourceserver.jwt.jwk-set-uri=",
             "okta.oauth2.issuer=",
-            "okta.oauth2.client-id=",
+            "spring.security.oauth2.resourceserver.jwt.client-id=",
             "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration,org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration,com.okta.spring.boot.oauth.OktaOAuth2AutoConfiguration"
         );
     }
